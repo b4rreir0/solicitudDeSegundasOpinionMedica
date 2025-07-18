@@ -1,0 +1,138 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Crear Cuenta de Paciente{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-user-plus"></i> Crear Cuenta de Paciente
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-4">
+                        Complete los siguientes datos para crear una cuenta de paciente. 
+                        Las credenciales serán enviadas automáticamente al email del paciente.
+                    </p>
+
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="email_paciente" class="form-label">
+                                <i class="fas fa-envelope"></i> Email del Paciente *
+                            </label>
+                            <input type="email" 
+                                   class="form-control" 
+                                   id="email_paciente" 
+                                   name="email_paciente" 
+                                   required
+                                   placeholder="ejemplo@correo.com">
+                            <div class="form-text">
+                                El paciente recibirá sus credenciales en este email.
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="nombre_completo" class="form-label">
+                                <i class="fas fa-user"></i> Nombre Completo (Opcional)
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="nombre_completo" 
+                                   name="nombre_completo" 
+                                   placeholder="Nombre y apellidos del paciente">
+                            <div class="form-text">
+                                Este nombre aparecerá en el perfil del paciente.
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Información:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>Se generará automáticamente un nombre de usuario basado en el email</li>
+                                <li>Se creará una contraseña temporal segura</li>
+                                <li>Se enviará un email con las credenciales al paciente</li>
+                                <li>El paciente podrá cambiar su contraseña después del primer inicio de sesión</li>
+                            </ul>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-paper-plane"></i> Crear Cuenta y Enviar Credenciales
+                            </button>
+                            <a href="{% url 'dashboard' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Volver al Dashboard
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Información adicional -->
+            <div class="mt-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-question-circle"></i> Preguntas Frecuentes
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="accordion" id="faqAccordion">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingOne">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                                        ¿Qué pasa si el email ya está registrado?
+                                    </button>
+                                </h2>
+                                <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body">
+                                        Si el email ya está registrado en el sistema, no se creará una nueva cuenta y se mostrará un mensaje de error.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingTwo">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
+                                        ¿Cómo puede el paciente cambiar su contraseña?
+                                    </button>
+                                </h2>
+                                <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body">
+                                        Una vez que inicie sesión, el paciente puede ir a su perfil y usar la opción "Cambiar contraseña" para establecer una nueva contraseña.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingThree">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">
+                                        ¿Puedo reenviar las credenciales?
+                                    </button>
+                                </h2>
+                                <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body">
+                                        Si el paciente no recibe el email, puede contactar al administrador del sistema para reenviar las credenciales.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

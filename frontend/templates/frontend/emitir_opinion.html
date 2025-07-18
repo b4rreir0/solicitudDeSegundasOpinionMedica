@@ -1,0 +1,527 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Emitir Opinión Médica - {{ solicitud.titulo }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+    .opinion-form {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 30px;
+        margin-bottom: 30px;
+    }
+    
+    .case-summary {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 30px;
+        border-left: 4px solid #007bff;
+    }
+    
+    .form-group {
+        margin-bottom: 25px;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 8px;
+        display: block;
+    }
+    
+    .form-control, .form-select {
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        padding: 12px 15px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    
+    .form-control.is-invalid {
+        border-color: #dc3545;
+    }
+    
+    .form-text {
+        color: #6c757d;
+        font-size: 13px;
+        margin-top: 5px;
+    }
+    
+    .btn-submit {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        border: none;
+        border-radius: 25px;
+        padding: 12px 30px;
+        font-weight: 600;
+        color: white;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+    }
+    
+    .btn-cancel {
+        background: #6c757d;
+        border: none;
+        border-radius: 25px;
+        padding: 12px 30px;
+        font-weight: 600;
+        color: white;
+        transition: all 0.3s ease;
+        margin-right: 10px;
+    }
+    
+    .btn-cancel:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(108, 117, 125, 0.4);
+    }
+    
+    .required-field::after {
+        content: " *";
+        color: #dc3545;
+        font-weight: bold;
+    }
+    
+    .case-info {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .info-item {
+        background: white;
+        padding: 15px;
+        border-radius: 10px;
+        border: 1px solid #e9ecef;
+    }
+    
+    .info-label {
+        font-weight: 600;
+        color: #6c757d;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 5px;
+    }
+    
+    .info-value {
+        font-size: 14px;
+        color: #333;
+        line-height: 1.4;
+    }
+    
+    .page-header {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        color: white;
+        padding: 30px 0;
+        margin-bottom: 30px;
+        border-radius: 15px;
+        text-align: center;
+    }
+    
+    .checkbox-custom {
+        position: relative;
+        display: inline-block;
+        margin-top: 10px;
+    }
+    
+    .checkbox-custom input[type="checkbox"] {
+        opacity: 0;
+        position: absolute;
+        left: -9999px;
+    }
+    
+    .checkbox-custom label {
+        position: relative;
+        padding-left: 35px;
+        cursor: pointer;
+        font-weight: 500;
+        color: #333;
+    }
+    
+    .checkbox-custom label::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 2px;
+        width: 20px;
+        height: 20px;
+        border: 2px solid #007bff;
+        border-radius: 4px;
+        background: white;
+        transition: all 0.3s ease;
+    }
+    
+    .checkbox-custom label::after {
+        content: "✓";
+        position: absolute;
+        left: 3px;
+        top: 0;
+        color: white;
+        font-weight: bold;
+        opacity: 0;
+        transition: all 0.3s ease;
+    }
+    
+    .checkbox-custom input[type="checkbox"]:checked + label::before {
+        background: #007bff;
+    }
+    
+    .checkbox-custom input[type="checkbox"]:checked + label::after {
+        opacity: 1;
+    }
+    
+    .character-counter {
+        text-align: right;
+        font-size: 12px;
+        color: #6c757d;
+        margin-top: 5px;
+    }
+    
+    .character-counter.warning {
+        color: #ffc107;
+    }
+    
+    .character-counter.danger {
+        color: #dc3545;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1><i class="fas fa-user-md"></i> Emitir Opinión Médica</h1>
+        <p class="mb-0">Proporciona tu análisis profesional y recomendaciones</p>
+    </div>
+
+    <!-- Case Summary -->
+    <div class="case-summary">
+        <h4 class="mb-3">
+            <i class="fas fa-clipboard-check"></i> 
+            Resumen del Caso: {{ solicitud.titulo }}
+        </h4>
+        
+        <div class="case-info">
+            <div class="info-item">
+                <div class="info-label">Paciente</div>
+                <div class="info-value">{{ solicitud.paciente.nombre_completo }}</div>
+            </div>
+            
+            <div class="info-item">
+                <div class="info-label">Especialidad Requerida</div>
+                <div class="info-value">{{ solicitud.especialidad_requerida }}</div>
+            </div>
+            
+            <div class="info-item">
+                <div class="info-label">Prioridad</div>
+                <div class="info-value">
+                    <span class="badge 
+                        {% if solicitud.prioridad == 'alta' %}bg-danger
+                        {% elif solicitud.prioridad == 'media' %}bg-warning
+                        {% else %}bg-success{% endif %}">
+                        {{ solicitud.get_prioridad_display }}
+                    </span>
+                </div>
+            </div>
+            
+            <div class="info-item">
+                <div class="info-label">Fecha de Solicitud</div>
+                <div class="info-value">{{ solicitud.fecha_creacion|date:"d/m/Y H:i" }}</div>
+            </div>
+            
+            {% if solicitud.tipo_cancer %}
+            <div class="info-item">
+                <div class="info-label">Tipo de Cáncer</div>
+                <div class="info-value">{{ solicitud.tipo_cancer|title }}</div>
+            </div>
+            {% endif %}
+            
+            {% if solicitud.estadio %}
+            <div class="info-item">
+                <div class="info-label">Estadio</div>
+                <div class="info-value">{{ solicitud.estadio }}</div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="row mt-3">
+            <div class="col-md-6">
+                <div class="info-item">
+                    <div class="info-label">Diagnóstico Inicial</div>
+                    <div class="info-value">{{ solicitud.diagnostico_inicial|default:"No especificado" }}</div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="info-item">
+                    <div class="info-label">Tratamiento Actual</div>
+                    <div class="info-value">{{ solicitud.tratamiento_actual|default:"No especificado" }}</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="info-item mt-3">
+            <div class="info-label">Descripción del Caso</div>
+            <div class="info-value">{{ solicitud.descripcion_caso }}</div>
+        </div>
+        
+        {% if solicitud.tratamientos_previos %}
+        <div class="info-item mt-3">
+            <div class="info-label">Tratamientos Previos</div>
+            <div class="info-value">{{ solicitud.tratamientos_previos }}</div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Opinion Form -->
+    <div class="opinion-form">
+        <form method="post" id="opinionForm">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="diagnostico_propuesto" class="form-label required-field">
+                    <i class="fas fa-diagnoses"></i> Diagnóstico Propuesto
+                </label>
+                <textarea 
+                    class="form-control" 
+                    id="diagnostico_propuesto" 
+                    name="diagnostico_propuesto" 
+                    rows="4" 
+                    required
+                    maxlength="1000"
+                    placeholder="Describe tu diagnóstico profesional basado en la información proporcionada...">{{ request.POST.diagnostico_propuesto }}</textarea>
+                <div class="form-text">
+                    <i class="fas fa-info-circle"></i> 
+                    Proporciona un diagnóstico claro y fundamentado
+                </div>
+                <div class="character-counter" data-target="diagnostico_propuesto">0/1000</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="recomendaciones" class="form-label required-field">
+                    <i class="fas fa-clipboard-list"></i> Recomendaciones
+                </label>
+                <textarea 
+                    class="form-control" 
+                    id="recomendaciones" 
+                    name="recomendaciones" 
+                    rows="5" 
+                    required
+                    maxlength="1500"
+                    placeholder="Detalla tus recomendaciones médicas específicas...">{{ request.POST.recomendaciones }}</textarea>
+                <div class="form-text">
+                    <i class="fas fa-info-circle"></i> 
+                    Incluye recomendaciones específicas para el manejo del caso
+                </div>
+                <div class="character-counter" data-target="recomendaciones">0/1500</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="tratamiento_sugerido" class="form-label">
+                    <i class="fas fa-pills"></i> Tratamiento Sugerido
+                </label>
+                <textarea 
+                    class="form-control" 
+                    id="tratamiento_sugerido" 
+                    name="tratamiento_sugerido" 
+                    rows="4"
+                    maxlength="1000"
+                    placeholder="Describe el tratamiento que recomiendas (opcional)...">{{ request.POST.tratamiento_sugerido }}</textarea>
+                <div class="form-text">
+                    <i class="fas fa-info-circle"></i> 
+                    Plan de tratamiento específico (si aplica)
+                </div>
+                <div class="character-counter" data-target="tratamiento_sugerido">0/1000</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="comentarios_adicionales" class="form-label">
+                    <i class="fas fa-comments"></i> Comentarios Adicionales
+                </label>
+                <textarea 
+                    class="form-control" 
+                    id="comentarios_adicionales" 
+                    name="comentarios_adicionales" 
+                    rows="3"
+                    maxlength="800"
+                    placeholder="Observaciones adicionales, referencias, o notas relevantes...">{{ request.POST.comentarios_adicionales }}</textarea>
+                <div class="form-text">
+                    <i class="fas fa-info-circle"></i> 
+                    Información adicional que consideres relevante
+                </div>
+                <div class="character-counter" data-target="comentarios_adicionales">0/800</div>
+            </div>
+            
+            <div class="form-group">
+                <div class="checkbox-custom">
+                    <input type="checkbox" id="requiere_seguimiento" name="requiere_seguimiento" 
+                           {% if request.POST.requiere_seguimiento %}checked{% endif %}>
+                    <label for="requiere_seguimiento">
+                        <i class="fas fa-calendar-check"></i> 
+                        Este caso requiere seguimiento médico
+                    </label>
+                </div>
+                <div class="form-text">
+                    <i class="fas fa-info-circle"></i> 
+                    Marca si consideras necesario un seguimiento posterior
+                </div>
+            </div>
+            
+            <div class="form-group mt-4">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <a href="{% url 'detalle_solicitud' solicitud.id %}" class="btn btn-cancel">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                    </div>
+                    <div>
+                        <button type="submit" class="btn btn-submit" id="submitBtn">
+                            <i class="fas fa-check"></i> Emitir Opinión
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Character counters
+    const textareas = document.querySelectorAll('textarea[maxlength]');
+    textareas.forEach(textarea => {
+        const counter = document.querySelector(`[data-target="${textarea.id}"]`);
+        if (counter) {
+            const updateCounter = () => {
+                const current = textarea.value.length;
+                const max = parseInt(textarea.getAttribute('maxlength'));
+                counter.textContent = `${current}/${max}`;
+                
+                // Update counter color based on usage
+                counter.classList.remove('warning', 'danger');
+                if (current > max * 0.8) {
+                    counter.classList.add('warning');
+                }
+                if (current > max * 0.95) {
+                    counter.classList.add('danger');
+                }
+            };
+            
+            textarea.addEventListener('input', updateCounter);
+            updateCounter(); // Initialize
+        }
+    });
+    
+    // Form validation
+    const form = document.getElementById('opinionForm');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    form.addEventListener('submit', function(e) {
+        const diagnostico = document.getElementById('diagnostico_propuesto').value.trim();
+        const recomendaciones = document.getElementById('recomendaciones').value.trim();
+        
+        if (!diagnostico || !recomendaciones) {
+            e.preventDefault();
+            alert('Por favor completa todos los campos requeridos.');
+            return;
+        }
+        
+        if (diagnostico.length < 50) {
+            e.preventDefault();
+            alert('El diagnóstico debe tener al menos 50 caracteres.');
+            return;
+        }
+        
+        if (recomendaciones.length < 50) {
+            e.preventDefault();
+            alert('Las recomendaciones deben tener al menos 50 caracteres.');
+            return;
+        }
+        
+        // Show loading state
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+        
+        // Confirm submission
+        if (!confirm('¿Estás seguro de que deseas emitir esta opinión médica? Esta acción no se puede deshacer.')) {
+            e.preventDefault();
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-check"></i> Emitir Opinión';
+        }
+    });
+    
+    // Auto-save draft (optional)
+    let autoSaveTimer;
+    const autosaveInputs = document.querySelectorAll('textarea');
+    
+    autosaveInputs.forEach(input => {
+        input.addEventListener('input', function() {
+            clearTimeout(autoSaveTimer);
+            autoSaveTimer = setTimeout(() => {
+                // Save draft to localStorage
+                const draftData = {
+                    diagnostico_propuesto: document.getElementById('diagnostico_propuesto').value,
+                    recomendaciones: document.getElementById('recomendaciones').value,
+                    tratamiento_sugerido: document.getElementById('tratamiento_sugerido').value,
+                    comentarios_adicionales: document.getElementById('comentarios_adicionales').value,
+                    requiere_seguimiento: document.getElementById('requiere_seguimiento').checked
+                };
+                localStorage.setItem(`opinion_draft_${{{ solicitud.id }}}`, JSON.stringify(draftData));
+            }, 2000);
+        });
+    });
+    
+    // Load draft on page load
+    const savedDraft = localStorage.getItem(`opinion_draft_${{{ solicitud.id }}}`);
+    if (savedDraft) {
+        try {
+            const draftData = JSON.parse(savedDraft);
+            if (confirm('Se encontró un borrador guardado. ¿Deseas restaurarlo?')) {
+                Object.keys(draftData).forEach(key => {
+                    const element = document.getElementById(key);
+                    if (element) {
+                        if (element.type === 'checkbox') {
+                            element.checked = draftData[key];
+                        } else {
+                            element.value = draftData[key];
+                        }
+                    }
+                });
+                // Update character counters
+                textareas.forEach(textarea => {
+                    const counter = document.querySelector(`[data-target="${textarea.id}"]`);
+                    if (counter) {
+                        const current = textarea.value.length;
+                        const max = parseInt(textarea.getAttribute('maxlength'));
+                        counter.textContent = `${current}/${max}`;
+                    }
+                });
+            }
+        } catch (e) {
+            console.error('Error loading draft:', e);
+        }
+    }
+    
+    // Clear draft on successful submission
+    form.addEventListener('submit', function() {
+        localStorage.removeItem(`opinion_draft_${{{ solicitud.id }}}`);
+    });
+});
+</script>
+{% endblock %}

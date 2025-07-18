@@ -24,6 +24,8 @@ urlpatterns = [
     path('api/usuarios/', include('usuarios.urls')),
     path('api/opiniones/', include('opiniones_medicas.urls')),
     path('api/documentos/', include('documentos.urls')),
+    path('equipos/', include('equipos.urls')),  # Equipos URLs
+    path('', include('frontend.urls')),  # Frontend URLs
 ]
 
 # Servir archivos media en desarrollo

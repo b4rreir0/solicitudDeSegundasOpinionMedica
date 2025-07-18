@@ -1,0 +1,613 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Registro - Segunda Opinión Médica{% endblock %}
+
+{% block extra_css %}
+<style>
+    .register-container {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #2A628F 0%, #1f4f73 100%);
+        padding: 2rem 0;
+    }
+    .register-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        overflow: hidden;
+        max-width: 1000px;
+        width: 100%;
+    }
+    .register-header {
+        background: linear-gradient(135deg, #2A628F 0%, #4CAF50 100%);
+        color: white;
+        padding: 2rem;
+        text-align: center;
+    }
+    .register-body {
+        padding: 2rem;
+    }
+    .role-selector {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+    }
+    .role-option {
+        flex: 1;
+        min-width: 200px;
+    }
+    .role-option input[type="radio"] {
+        display: none;
+    }
+    .role-option label {
+        display: block;
+        padding: 1.5rem;
+        border: 2px solid #dee2e6;
+        border-radius: 15px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: white;
+    }
+    .role-option input[type="radio"]:checked + label {
+        border-color: #2A628F;
+        background: linear-gradient(135deg, #2A628F 0%, #4CAF50 100%);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(42, 98, 143, 0.3);
+    }
+    .role-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+    .medico-fields {
+        display: none;
+        background: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+        border-left: 4px solid #2A628F;
+    }
+    .medico-fields.show {
+        display: block;
+        animation: slideDown 0.3s ease;
+    }
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    .form-step {
+        display: none;
+    }
+    .form-step.active {
+        display: block;
+    }
+    .step-indicator {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 2rem;
+    }
+    .step {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #dee2e6;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        margin: 0 1rem;
+        transition: all 0.3s ease;
+    }
+    .step.active {
+        background: #2A628F;
+        color: white;
+    }
+    .step.completed {
+        background: #28a745;
+        color: white;
+    }
+    .step::after {
+        content: '';
+        position: absolute;
+        width: 40px;
+        height: 2px;
+        background: #dee2e6;
+        left: 100%;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+    .step:last-child::after {
+        display: none;
+    }
+    .step.completed::after {
+        background: #28a745;
+    }
+    .password-strength {
+        margin-top: 0.5rem;
+    }
+    .strength-bar {
+        height: 4px;
+        background: #dee2e6;
+        border-radius: 2px;
+        overflow: hidden;
+        margin-bottom: 0.5rem;
+    }
+    .strength-fill {
+        height: 100%;
+        width: 0%;
+        transition: all 0.3s ease;
+    }
+    .strength-weak { background: #dc3545; }
+    .strength-medium { background: #ffc107; }
+    .strength-strong { background: #28a745; }
+    .form-floating {
+        margin-bottom: 1rem;
+    }
+    .btn-register {
+        background: linear-gradient(135deg, #2A628F 0%, #4CAF50 100%);
+        border: none;
+        border-radius: 10px;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        transition: transform 0.3s ease;
+    }
+    .btn-register:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    }
+    .terms-box {
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+        border-left: 4px solid #2A628F;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="register-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12">
+                <div class="register-card">
+                    <div class="register-header">
+                        <h2 class="mb-3">Únete a Nuestra Plataforma</h2>
+                        <p class="lead mb-0">Crea tu cuenta para acceder a segundas opiniones médicas profesionales</p>
+                    </div>
+                    <div class="register-body">
+                        <!-- Indicador de pasos -->
+                        <div class="step-indicator">
+                            <div class="step active" data-step="1">1</div>
+                            <div class="step" data-step="2">2</div>
+                            <div class="step" data-step="3">3</div>
+                        </div>
+
+                        <form method="post" id="registerForm">
+                            {% csrf_token %}
+                            
+                            <!-- Paso 1: Tipo de usuario -->
+                            <div class="form-step active" data-step="1">
+                                <div class="text-center mb-4">
+                                    <h4>¿Cómo te vas a registrar?</h4>
+                                    <p class="text-muted">Selecciona tu rol en la plataforma</p>
+                                </div>
+                                
+                                <div class="role-selector">
+                                    <div class="role-option">
+                                        <input type="radio" id="rol-paciente" name="rol" value="paciente" checked>
+                                        <label for="rol-paciente">
+                                            <i class="fas fa-user role-icon"></i>
+                                            <h5>Paciente</h5>
+                                            <p class="mb-0">Busco segundas opiniones médicas</p>
+                                        </label>
+                                    </div>
+                                    <div class="role-option">
+                                        <input type="radio" id="rol-medico" name="rol" value="medico">
+                                        <label for="rol-medico">
+                                            <i class="fas fa-user-md role-icon"></i>
+                                            <h5>Médico</h5>
+                                            <p class="mb-0">Proporciono opiniones médicas profesionales</p>
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-center">
+                                    <button type="button" class="btn btn-primary btn-register" onclick="nextStep(1)">
+                                        Continuar <i class="fas fa-arrow-right ms-2"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Paso 2: Información personal -->
+                            <div class="form-step" data-step="2">
+                                <div class="text-center mb-4">
+                                    <h4>Información Personal</h4>
+                                    <p class="text-muted">Complete sus datos personales</p>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-floating">
+                                            <input type="text" class="form-control" id="first_name" name="first_name" 
+                                                   placeholder="Nombres" required>
+                                            <label for="first_name">Nombres</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating">
+                                            <input type="text" class="form-control" id="last_name" name="last_name" 
+                                                   placeholder="Apellidos" required>
+                                            <label for="last_name">Apellidos</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-floating">
+                                    <input type="email" class="form-control" id="email" name="email" 
+                                           placeholder="Email" required>
+                                    <label for="email">Correo Electrónico</label>
+                                </div>
+                                
+                                <div class="form-floating">
+                                    <input type="tel" class="form-control" id="telefono" name="telefono" 
+                                           placeholder="Teléfono">
+                                    <label for="telefono">Teléfono (opcional)</label>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-floating">
+                                            <select class="form-select" id="sexo" name="sexo">
+                                                <option value="">Seleccionar...</option>
+                                                <option value="M">Masculino</option>
+                                                <option value="F">Femenino</option>
+                                                <option value="O">Otro</option>
+                                            </select>
+                                            <label for="sexo">Sexo</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating">
+                                            <input type="number" class="form-control" id="peso" name="peso" 
+                                                   placeholder="Peso" step="0.1" min="0">
+                                            <label for="peso">Peso (kg)</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Campos adicionales para médicos -->
+                                <div class="medico-fields" id="medico-fields">
+                                    <h5 class="mb-3">
+                                        <i class="fas fa-stethoscope me-2"></i>
+                                        Información Profesional
+                                    </h5>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" id="numero_colegiado" name="numero_colegiado" 
+                                                       placeholder="Número de Colegiado">
+                                                <label for="numero_colegiado">Número de Colegiado</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" id="especialidad" name="especialidad" 
+                                                       placeholder="Especialidad">
+                                                <label for="especialidad">Especialidad</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-floating">
+                                                <input type="number" class="form-control" id="años_experiencia" name="años_experiencia" 
+                                                       placeholder="Años de Experiencia" min="0">
+                                                <label for="años_experiencia">Años de Experiencia</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" id="hospital_clinica" name="hospital_clinica" 
+                                                       placeholder="Hospital/Clínica">
+                                                <label for="hospital_clinica">Hospital/Clínica (opcional)</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="prevStep(2)">
+                                        <i class="fas fa-arrow-left me-2"></i>Anterior
+                                    </button>
+                                    <button type="button" class="btn btn-primary btn-register" onclick="nextStep(2)">
+                                        Continuar <i class="fas fa-arrow-right ms-2"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Paso 3: Credenciales -->
+                            <div class="form-step" data-step="3">
+                                <div class="text-center mb-4">
+                                    <h4>Credenciales de Acceso</h4>
+                                    <p class="text-muted">Configure su usuario y contraseña</p>
+                                </div>
+                                
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="username" name="username" 
+                                           placeholder="Usuario" required>
+                                    <label for="username">Nombre de Usuario</label>
+                                    <div class="form-text">El nombre de usuario debe ser único</div>
+                                </div>
+                                
+                                <div class="form-floating">
+                                    <input type="password" class="form-control" id="password" name="password" 
+                                           placeholder="Contraseña" required>
+                                    <label for="password">Contraseña</label>
+                                    <div class="password-strength">
+                                        <div class="strength-bar">
+                                            <div class="strength-fill"></div>
+                                        </div>
+                                        <small class="strength-text text-muted">Ingrese una contraseña</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-floating">
+                                    <input type="password" class="form-control" id="password_confirm" name="password_confirm" 
+                                           placeholder="Confirmar Contraseña" required>
+                                    <label for="password_confirm">Confirmar Contraseña</label>
+                                </div>
+                                
+                                <div class="terms-box">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="terms" name="terms" required>
+                                        <label class="form-check-label" for="terms">
+                                            <strong>Acepto los términos y condiciones</strong>
+                                        </label>
+                                    </div>
+                                    <small class="text-muted">
+                                        Al registrarse, acepta nuestros términos de servicio y política de privacidad. 
+                                        Su información médica será tratada con total confidencialidad.
+                                    </small>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="prevStep(3)">
+                                        <i class="fas fa-arrow-left me-2"></i>Anterior
+                                    </button>
+                                    <button type="submit" class="btn btn-success btn-register">
+                                        <i class="fas fa-user-plus me-2"></i>Crear Cuenta
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                        
+                        <div class="text-center mt-4">
+                            <p class="mb-0">
+                                ¿Ya tienes una cuenta? 
+                                <a href="{% url 'login' %}" class="text-decoration-none fw-bold">
+                                    Inicia sesión aquí
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentStep = 1;
+    const totalSteps = 3;
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        setupRoleToggle();
+        setupPasswordStrength();
+        setupFormValidation();
+    });
+    
+    function setupRoleToggle() {
+        const roleRadios = document.querySelectorAll('input[name="rol"]');
+        const medicoFields = document.getElementById('medico-fields');
+        
+        roleRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                if (this.value === 'medico') {
+                    medicoFields.classList.add('show');
+                    // Hacer campos obligatorios
+                    medicoFields.querySelectorAll('input').forEach(input => {
+                        if (input.id !== 'hospital_clinica') {
+                            input.required = true;
+                        }
+                    });
+                } else {
+                    medicoFields.classList.remove('show');
+                    // Quitar obligatoriedad
+                    medicoFields.querySelectorAll('input').forEach(input => {
+                        input.required = false;
+                    });
+                }
+            });
+        });
+    }
+    
+    function setupPasswordStrength() {
+        const passwordInput = document.getElementById('password');
+        const strengthBar = document.querySelector('.strength-fill');
+        const strengthText = document.querySelector('.strength-text');
+        
+        passwordInput.addEventListener('input', function() {
+            const password = this.value;
+            const strength = calculatePasswordStrength(password);
+            
+            strengthBar.style.width = strength.percentage + '%';
+            strengthBar.className = 'strength-fill ' + strength.class;
+            strengthText.textContent = strength.text;
+        });
+    }
+    
+    function calculatePasswordStrength(password) {
+        let score = 0;
+        let feedback = [];
+        
+        if (password.length >= 8) score += 25;
+        else feedback.push('al menos 8 caracteres');
+        
+        if (/[a-z]/.test(password)) score += 25;
+        else feedback.push('minúsculas');
+        
+        if (/[A-Z]/.test(password)) score += 25;
+        else feedback.push('mayúsculas');
+        
+        if (/[0-9]/.test(password)) score += 25;
+        else feedback.push('números');
+        
+        if (score < 50) {
+            return {
+                percentage: score,
+                class: 'strength-weak',
+                text: `Débil - Necesita: ${feedback.join(', ')}`
+            };
+        } else if (score < 75) {
+            return {
+                percentage: score,
+                class: 'strength-medium',
+                text: 'Media - Buena seguridad'
+            };
+        } else {
+            return {
+                percentage: score,
+                class: 'strength-strong',
+                text: 'Fuerte - Excelente seguridad'
+            };
+        }
+    }
+    
+    function setupFormValidation() {
+        const form = document.getElementById('registerForm');
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('password_confirm');
+        
+        confirmPasswordInput.addEventListener('input', function() {
+            if (this.value !== passwordInput.value) {
+                this.setCustomValidity('Las contraseñas no coinciden');
+            } else {
+                this.setCustomValidity('');
+            }
+        });
+        
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (validateCurrentStep()) {
+                // Aquí podrías agregar validaciones adicionales antes del envío
+                this.submit();
+            }
+        });
+    }
+    
+    function nextStep(step) {
+        if (validateCurrentStep()) {
+            currentStep++;
+            updateStepDisplay();
+        }
+    }
+    
+    function prevStep(step) {
+        currentStep--;
+        updateStepDisplay();
+    }
+    
+    function updateStepDisplay() {
+        // Actualizar pasos
+        document.querySelectorAll('.form-step').forEach(step => {
+            step.classList.remove('active');
+        });
+        const currentStepElement = document.querySelector(`.form-step[data-step="${currentStep}"]`);
+        if (currentStepElement) {
+            currentStepElement.classList.add('active');
+        }
+        
+        // Actualizar indicadores
+        document.querySelectorAll('.step').forEach((step, index) => {
+            step.classList.remove('active', 'completed');
+            if (index + 1 < currentStep) {
+                step.classList.add('completed');
+            } else if (index + 1 === currentStep) {
+                step.classList.add('active');
+            }
+        });
+    }
+    
+    function validateCurrentStep() {
+        const currentStepElement = document.querySelector(`.form-step[data-step="${currentStep}"]`);
+        const inputs = currentStepElement.querySelectorAll('input[required]');
+        let isValid = true;
+        
+        inputs.forEach(input => {
+            if (!input.value.trim()) {
+                isValid = false;
+                input.focus();
+                const label = input.labels && input.labels[0] ? input.labels[0].textContent : 'este campo';
+                showToast(`Por favor complete el campo: ${label}`, 'warning');
+                return false;
+            }
+        });
+        
+        // Validaciones específicas por paso
+        if (currentStep === 3) {
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('password_confirm').value;
+            
+            if (password !== confirmPassword) {
+                isValid = false;
+                showToast('Las contraseñas no coinciden', 'warning');
+            }
+            
+            if (password.length < 6) {
+                isValid = false;
+                showToast('La contraseña debe tener al menos 6 caracteres', 'warning');
+            }
+        }
+        
+        return isValid;
+    }
+    
+    function showToast(message, type) {
+        // Crear el toast
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+        toast.style.top = '20px';
+        toast.style.right = '20px';
+        toast.style.zIndex = '9999';
+        toast.style.minWidth = '300px';
+        toast.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        document.body.appendChild(toast);
+        
+        // Remover automáticamente después de 5 segundos
+        setTimeout(() => {
+            if (toast && toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 5000);
+    }
+</script>
+{% endblock %}

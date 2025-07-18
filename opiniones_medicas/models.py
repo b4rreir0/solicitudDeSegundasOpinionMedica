@@ -63,6 +63,42 @@ class SolicitudOpinion(models.Model):
         help_text='Especialidad médica requerida para la segunda opinión'
     )
     
+    # Campos específicos para oncología
+    tipo_cancer = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        help_text='Tipo de cáncer (ej: mama, pulmón, colon, etc.)'
+    )
+    
+    estadio = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True,
+        help_text='Estadio del cáncer (ej: I, II, III, IV)'
+    )
+    
+    fecha_diagnostico = models.DateField(
+        blank=True,
+        null=True,
+        help_text='Fecha del diagnóstico inicial'
+    )
+    
+    tratamientos_previos = models.TextField(
+        blank=True,
+        null=True,
+        help_text='Tratamientos previos recibidos'
+    )
+    
+    equipo_asignado = models.ForeignKey(
+        'equipos.EquipoTrabajo',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='solicitudes_asignadas',
+        help_text='Equipo de trabajo asignado'
+    )
+    
     estado = models.CharField(
         max_length=20,
         choices=ESTADO_CHOICES,

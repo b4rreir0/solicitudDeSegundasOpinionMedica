@@ -1,0 +1,480 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - {{ user.get_rol_display }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-card {
+        transition: all 0.3s ease;
+        border: none;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        border-radius: 15px;
+        overflow: hidden;
+    }
+    .dashboard-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+    }
+    .dashboard-card-primary {
+        background: var(--primary-color);
+        color: var(--background-color);
+    }
+    .dashboard-card-success {
+        background: var(--success-color);
+        color: var(--background-color);
+    }
+    .dashboard-card-warning {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+    }
+    .dashboard-card-info {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+    }
+    .dashboard-card-danger {
+        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        color: white;
+    }
+    .stat-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+    .quick-actions {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 15px;
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+    }
+    .recent-item {
+        border-left: 4px solid #007bff;
+        padding-left: 1rem;
+        margin-bottom: 1rem;
+    }
+    .priority-alta { border-left-color: #dc3545; }
+    .priority-media { border-left-color: #ffc107; }
+    .priority-baja { border-left-color: #28a745; }
+    .priority-urgente { border-left-color: #dc3545; animation: pulse 2s infinite; }
+    
+    @keyframes pulse {
+        0% { border-left-color: #dc3545; }
+        50% { border-left-color: #ff6b6b; }
+        100% { border-left-color: #dc3545; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-6 fw-bold mb-2">¡Bienvenido, {{ user.first_name|default:user.username }}!</h1>
+            <p class="text-muted mb-0">Dashboard - {{ user.get_rol_display }}</p>
+        </div>
+    </div>
+
+    {% if user.rol == 'paciente' %}
+    <!-- Dashboard del Paciente -->
+    <div class="quick-actions">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h3 class="mb-3">Acciones Rápidas</h3>
+                <p class="mb-3">Gestiona tus solicitudes de segunda opinión médica</p>
+                <a href="{% url 'crear_solicitud' %}" class="btn btn-light btn-lg me-3">
+                    <i class="fas fa-plus me-2"></i>Nueva Solicitud
+                </a>
+                <a href="{% url 'mis_solicitudes' %}" class="btn btn-outline-light btn-lg">
+                    <i class="fas fa-list me-2"></i>Mis Solicitudes
+                </a>
+            </div>
+            <div class="col-md-4 text-center">
+                <i class="fas fa-file-medical" style="font-size: 4rem; opacity: 0.3;"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estadísticas del Paciente -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card dashboard-card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-file-medical-alt text-primary stat-icon"></i>
+                    <div class="stat-number text-primary">{{ total_solicitudes }}</div>
+                    <h6 class="text-muted mb-0">Total Solicitudes</h6>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card dashboard-card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-clock text-warning stat-icon"></i>
+                    <div class="stat-number text-warning">{{ solicitudes_pendientes }}</div>
+                    <h6 class="text-muted mb-0">Pendientes</h6>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card dashboard-card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-check-circle text-success stat-icon"></i>
+                    <div class="stat-number text-success">{{ solicitudes_completadas }}</div>
+                    <h6 class="text-muted mb-0">Completadas</h6>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card dashboard-card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-paperclip text-info stat-icon"></i>
+                    <div class="stat-number text-info">{{ documentos_subidos }}</div>
+                    <h6 class="text-muted mb-0">Documentos</h6>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Solicitudes Recientes -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Solicitudes Recientes</h5>
+                </div>
+                <div class="card-body">
+                    {% if solicitudes_recientes %}
+                        {% for solicitud in solicitudes_recientes %}
+                        <div class="recent-item priority-{{ solicitud.prioridad }}">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">{{ solicitud.titulo }}</h6>
+                                    <p class="text-muted mb-1">{{ solicitud.especialidad_requerida }}</p>
+                                    <small class="text-muted">{{ solicitud.fecha_creacion|date:"d/m/Y H:i" }}</small>
+                                </div>
+                                <div class="text-end">
+                                    {% if solicitud.estado == 'pendiente' %}
+                                        <span class="badge bg-warning mb-2">{{ solicitud.get_estado_display }}</span>
+                                    {% elif solicitud.estado == 'asignada' %}
+                                        <span class="badge bg-info mb-2">{{ solicitud.get_estado_display }}</span>
+                                    {% elif solicitud.estado == 'en_revision' %}
+                                        <span class="badge bg-primary mb-2">{{ solicitud.get_estado_display }}</span>
+                                    {% elif solicitud.estado == 'completada' %}
+                                        <span class="badge bg-success mb-2">{{ solicitud.get_estado_display }}</span>
+                                    {% elif solicitud.estado == 'cancelada' %}
+                                        <span class="badge bg-danger mb-2">{{ solicitud.get_estado_display }}</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary mb-2">{{ solicitud.get_estado_display }}</span>
+                                    {% endif %}
+                                    <br>
+                                    <a href="{% url 'detalle_solicitud' solicitud.id %}" class="btn btn-sm btn-outline-primary">
+                                        Ver Detalles
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted mb-0">No tienes solicitudes recientes.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% elif user.rol == 'medico' %}
+    <!-- Dashboard del Médico -->
+    <div class="quick-actions">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h3 class="mb-3">Panel Médico</h3>
+                <p class="mb-3">Gestiona las solicitudes asignadas y emite opiniones médicas</p>
+                <a href="{% url 'solicitudes_asignadas' %}" class="btn btn-light btn-lg me-3">
+                    <i class="fas fa-clipboard-list me-2"></i>Solicitudes Asignadas
+                </a>
+                <a href="{% url 'equipos:mis_equipos' %}" class="btn btn-outline-light btn-lg me-3">
+                    <i class="fas fa-users-cog me-2"></i>Mis Equipos
+                </a>
+                <a href="{% url 'opiniones_emitidas' %}" class="btn btn-outline-light btn-lg">
+                    <i class="fas fa-comments me-2"></i>Opiniones Emitidas
+                </a>
+            </div>
+            <div class="col-md-4 text-center">
+                <i class="fas fa-user-md" style="font-size: 4rem; opacity: 0.3;"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estadísticas del Médico -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card dashboard-card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-clipboard-list text-primary stat-icon"></i>
+                    <div class="stat-number text-primary">{{ solicitudes_asignadas }}</div>
+                    <h6 class="text-muted mb-0">Solicitudes Asignadas</h6>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card dashboard-card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-clock text-warning stat-icon"></i>
+                    <div class="stat-number text-warning">{{ solicitudes_pendientes }}</div>
+                    <h6 class="text-muted mb-0">Pendientes</h6>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card dashboard-card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-comments text-success stat-icon"></i>
+                    <div class="stat-number text-success">{{ opiniones_emitidas }}</div>
+                    <h6 class="text-muted mb-0">Opiniones Emitidas</h6>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card dashboard-card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-star text-info stat-icon"></i>
+                    <div class="stat-number text-info">{{ calificacion_promedio|floatformat:1 }}</div>
+                    <h6 class="text-muted mb-0">Calificación</h6>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Solicitudes Recientes del Médico -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Solicitudes Recientes</h5>
+                </div>
+                <div class="card-body">
+                    {% if solicitudes_recientes %}
+                        {% for solicitud in solicitudes_recientes %}
+                        <div class="recent-item priority-{{ solicitud.prioridad }}">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">{{ solicitud.titulo }}</h6>
+                                    <p class="text-muted mb-1">Paciente: {{ solicitud.paciente.get_full_name|default:solicitud.paciente.username }}</p>
+                                    <small class="text-muted">{{ solicitud.fecha_asignacion|date:"d/m/Y H:i" }}</small>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge bg-{{ solicitud.estado|default:'secondary' }} mb-2">{{ solicitud.get_estado_display }}</span>
+                                    <br>
+                                    <a href="{% url 'detalle_solicitud' solicitud.id %}" class="btn btn-sm btn-outline-primary">
+                                        Ver Detalles
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted mb-0">No tienes solicitudes asignadas recientes.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Seguimientos Pendientes</h5>
+                </div>
+                <div class="card-body">
+                    {% if seguimientos_pendientes > 0 %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Tienes {{ seguimientos_pendientes }} seguimientos pendientes.
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0">No tienes seguimientos pendientes.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% elif user.rol == 'admin' %}
+    <!-- Dashboard del Administrador -->
+    <div class="quick-actions">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h3 class="mb-3">Panel de Administración</h3>
+                <p class="mb-3">Gestiona el sistema y supervisa todas las operaciones</p>
+                <a href="{% url 'admin:index' %}" class="btn btn-light btn-lg me-3">
+                    <i class="fas fa-cog me-2"></i>Administración
+                </a>
+                <a href="{% url 'lista_solicitudes' %}" class="btn btn-outline-light btn-lg">
+                    <i class="fas fa-list me-2"></i>Todas las Solicitudes
+                </a>
+            </div>
+            <div class="col-md-4 text-center">
+                <i class="fas fa-shield-alt" style="font-size: 4rem; opacity: 0.3;"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estadísticas del Administrador -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card dashboard-card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-users text-primary stat-icon"></i>
+                    <div class="stat-number text-primary">{{ total_usuarios }}</div>
+                    <h6 class="text-muted mb-0">Total Usuarios</h6>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card dashboard-card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-user-md text-info stat-icon"></i>
+                    <div class="stat-number text-info">{{ total_medicos }}</div>
+                    <h6 class="text-muted mb-0">Médicos</h6>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card dashboard-card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-user-injured text-success stat-icon"></i>
+                    <div class="stat-number text-success">{{ total_pacientes }}</div>
+                    <h6 class="text-muted mb-0">Pacientes</h6>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card dashboard-card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-file-medical text-warning stat-icon"></i>
+                    <div class="stat-number text-warning">{{ total_solicitudes }}</div>
+                    <h6 class="text-muted mb-0">Solicitudes</h6>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estadísticas Adicionales -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card dashboard-card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-calendar-alt text-primary stat-icon"></i>
+                    <div class="stat-number text-primary">{{ solicitudes_mes }}</div>
+                    <h6 class="text-muted mb-0">Este Mes</h6>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card dashboard-card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-clock text-warning stat-icon"></i>
+                    <div class="stat-number text-warning">{{ solicitudes_pendientes }}</div>
+                    <h6 class="text-muted mb-0">Pendientes</h6>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card dashboard-card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-user-check text-success stat-icon"></i>
+                    <div class="stat-number text-success">{{ medicos_activos }}</div>
+                    <h6 class="text-muted mb-0">Médicos Activos</h6>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card dashboard-card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-chart-line text-info stat-icon"></i>
+                    <div class="stat-number text-info">{{ solicitudes_por_estado|length }}</div>
+                    <h6 class="text-muted mb-0">Estados Activos</h6>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráfico de Estados -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Solicitudes por Estado</h5>
+                </div>
+                <div class="card-body">
+                    {% if solicitudes_por_estado %}
+                        {% for estado in solicitudes_por_estado %}
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-capitalize">{{ estado.estado }}</span>
+                            <span class="badge bg-primary">{{ estado.count }}</span>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted mb-0">No hay datos disponibles.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Resumen del Sistema</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="text-center">
+                                <h4 class="text-primary mb-0">{{ total_solicitudes }}</h4>
+                                <small class="text-muted">Solicitudes Total</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center">
+                                <h4 class="text-success mb-0">{{ medicos_activos }}</h4>
+                                <small class="text-muted">Médicos Activos</small>
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="text-center">
+                                <h4 class="text-info mb-0">{{ total_pacientes }}</h4>
+                                <small class="text-muted">Pacientes</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center">
+                                <h4 class="text-warning mb-0">{{ solicitudes_pendientes }}</h4>
+                                <small class="text-muted">Pendientes</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Actualizar notificaciones en tiempo real
+    document.addEventListener('DOMContentLoaded', function() {
+        // Simular actualizaciones periódicas
+        setInterval(function() {
+            // Aquí podrías hacer llamadas AJAX para actualizar estadísticas
+            // Por ejemplo, actualizar badge de notificaciones
+        }, 30000); // cada 30 segundos
+    });
+</script>
+{% endblock %}

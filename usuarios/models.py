@@ -42,6 +42,28 @@ class Usuario(AbstractUser):
         help_text='Dirección del usuario'
     )
     
+    SEXO_CHOICES = [
+        ('M', 'Masculino'),
+        ('F', 'Femenino'),
+        ('O', 'Otro'),
+    ]
+    
+    sexo = models.CharField(
+        max_length=1,
+        choices=SEXO_CHOICES,
+        blank=True,
+        null=True,
+        help_text='Sexo del paciente'
+    )
+    
+    peso = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        blank=True,
+        null=True,
+        help_text='Peso del paciente en kg'
+    )
+    
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_actualizacion = models.DateTimeField(auto_now=True)
     
@@ -55,6 +77,65 @@ class Usuario(AbstractUser):
     @property
     def nombre_completo(self):
         return f"{self.first_name} {self.last_name}".strip()
+
+
+class CodigoVerificacion(models.Model):
+    """Modelo para códigos de verificación de email"""
+    
+    TIPO_CHOICES = [
+        ('registro', 'Registro de Usuario'),
+        ('recuperacion', 'Recuperación de Contraseña'),
+        ('cambio_email', 'Cambio de Email'),
+    ]
+    
+    email = models.EmailField(
+        help_text='Email al que se envió el código'
+    )
+    
+    codigo = models.CharField(
+        max_length=6,
+        help_text='Código de verificación de 6 dígitos'
+    )
+    
+    tipo = models.CharField(
+        max_length=20,
+        choices=TIPO_CHOICES,
+        default='registro',
+        help_text='Tipo de verificación'
+    )
+    
+    datos_temporales = models.JSONField(
+        blank=True,
+        null=True,
+        help_text='Datos temporales del usuario para el registro'
+    )
+    
+    usado = models.BooleanField(
+        default=False,
+        help_text='Indica si el código ya fue usado'
+    )
+    
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    fecha_expiracion = models.DateTimeField(
+        help_text='Fecha de expiración del código'
+    )
+    
+    class Meta:
+        verbose_name = 'Código de Verificación'
+        verbose_name_plural = 'Códigos de Verificación'
+        ordering = ['-fecha_creacion']
+    
+    def __str__(self):
+        return f"{self.email} - {self.codigo} ({self.get_tipo_display()})"
+    
+    def is_expired(self):
+        """Verifica si el código ha expirado"""
+        from django.utils import timezone
+        return timezone.now() > self.fecha_expiracion
+    
+    def is_valid(self):
+        """Verifica si el código es válido (no usado y no expirado)"""
+        return not self.usado and not self.is_expired()
 
 
 class PerfilMedico(models.Model):

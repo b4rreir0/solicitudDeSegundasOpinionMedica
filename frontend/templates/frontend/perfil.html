@@ -1,0 +1,289 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Mi Perfil - {{ user.get_rol_display }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 2rem;
+        border-radius: 15px;
+    }
+    .profile-avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        border: 4px solid white;
+        margin-bottom: 1rem;
+        background: rgba(255,255,255,0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+    }
+    .profile-section {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .form-floating {
+        margin-bottom: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header del Perfil -->
+    <div class="profile-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-3 text-center">
+                    <div class="profile-avatar mx-auto">
+                        <i class="fas fa-user"></i>
+                    </div>
+                </div>
+                <div class="col-md-9">
+                    <h1 class="display-6 fw-bold mb-2">
+                        {{ user.get_full_name|default:user.username }}
+                    </h1>
+                    <p class="lead mb-3">{{ user.get_rol_display }}</p>
+                    <div class="d-flex align-items-center">
+                        <span class="badge bg-light text-dark me-2">
+                            <i class="fas fa-envelope me-1"></i>{{ user.email }}
+                        </span>
+                        {% if user.telefono %}
+                        <span class="badge bg-light text-dark">
+                            <i class="fas fa-phone me-1"></i>{{ user.telefono }}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Información Personal -->
+            <div class="profile-section">
+                <h4 class="mb-4">
+                    <i class="fas fa-user-edit me-2 text-primary"></i>
+                    Información Personal
+                </h4>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="first_name" name="first_name" 
+                                       value="{{ user.first_name }}" placeholder="Nombres">
+                                <label for="first_name">Nombres</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="last_name" name="last_name" 
+                                       value="{{ user.last_name }}" placeholder="Apellidos">
+                                <label for="last_name">Apellidos</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="email" class="form-control" id="email" name="email" 
+                                       value="{{ user.email }}" placeholder="Email">
+                                <label for="email">Correo Electrónico</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="tel" class="form-control" id="telefono" name="telefono" 
+                                       value="{{ user.telefono }}" placeholder="Teléfono">
+                                <label for="telefono">Teléfono</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-floating">
+                        <input type="date" class="form-control" id="fecha_nacimiento" name="fecha_nacimiento" 
+                               value="{{ user.fecha_nacimiento|date:'Y-m-d' }}" placeholder="Fecha de Nacimiento">
+                        <label for="fecha_nacimiento">Fecha de Nacimiento</label>
+                    </div>
+                    
+                    <div class="form-floating">
+                        <textarea class="form-control" id="direccion" name="direccion" style="height: 100px;" 
+                                  placeholder="Dirección">{{ user.direccion }}</textarea>
+                        <label for="direccion">Dirección</label>
+                    </div>
+                    
+                    {% if user.rol == 'medico' and perfil_medico %}
+                    <hr class="my-4">
+                    <h5 class="mb-3">
+                        <i class="fas fa-stethoscope me-2 text-primary"></i>
+                        Información Profesional
+                    </h5>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="especialidad" name="especialidad" 
+                                       value="{{ perfil_medico.especialidad }}" placeholder="Especialidad">
+                                <label for="especialidad">Especialidad</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="number" class="form-control" id="años_experiencia" name="años_experiencia" 
+                                       value="{{ perfil_medico.años_experiencia }}" placeholder="Años de Experiencia">
+                                <label for="años_experiencia">Años de Experiencia</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-floating">
+                        <input type="text" class="form-control" id="hospital_clinica" name="hospital_clinica" 
+                               value="{{ perfil_medico.hospital_clinica }}" placeholder="Hospital/Clínica">
+                        <label for="hospital_clinica">Hospital/Clínica</label>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Volver al Dashboard
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Guardar Cambios
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Estadísticas del Usuario -->
+            <div class="profile-section">
+                <h4 class="mb-4">
+                    <i class="fas fa-chart-bar me-2 text-primary"></i>
+                    Estadísticas
+                </h4>
+                
+                {% if user.rol == 'paciente' %}
+                <div class="text-center mb-3">
+                    <div class="badge bg-primary fs-6 p-3 rounded-circle mb-2" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
+                        <span class="fs-4">{{ user.solicitudes_paciente.count }}</span>
+                    </div>
+                    <p class="mb-0">Solicitudes Creadas</p>
+                </div>
+                
+                <div class="text-center mb-3">
+                    <div class="badge bg-success fs-6 p-3 rounded-circle mb-2" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
+                        <span class="fs-4">{{ solicitudes_completadas|default:0 }}</span>
+                    </div>
+                    <p class="mb-0">Solicitudes Completadas</p>
+                </div>
+                
+                {% elif user.rol == 'medico' %}
+                <div class="text-center mb-3">
+                    <div class="badge bg-primary fs-6 p-3 rounded-circle mb-2" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
+                        <span class="fs-4">{{ user.solicitudes_medico.count }}</span>
+                    </div>
+                    <p class="mb-0">Solicitudes Asignadas</p>
+                </div>
+                
+                <div class="text-center mb-3">
+                    <div class="badge bg-success fs-6 p-3 rounded-circle mb-2" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
+                        <span class="fs-4">{{ user.opiniones_emitidas.count }}</span>
+                    </div>
+                    <p class="mb-0">Opiniones Emitidas</p>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Información de la Cuenta -->
+            <div class="profile-section">
+                <h4 class="mb-4">
+                    <i class="fas fa-info-circle me-2 text-primary"></i>
+                    Información de Cuenta
+                </h4>
+                
+                <div class="mb-3">
+                    <strong>Usuario:</strong><br>
+                    <span class="text-muted">{{ user.username }}</span>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Fecha de Registro:</strong><br>
+                    <span class="text-muted">{{ user.date_joined|date:"d/m/Y" }}</span>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Último Acceso:</strong><br>
+                    <span class="text-muted">{{ user.last_login|date:"d/m/Y H:i" }}</span>
+                </div>
+                
+                <div class="d-grid">
+                    <a href="{% url 'cambiar_password' %}" class="btn btn-outline-warning mb-2">
+                        <i class="fas fa-key me-2"></i>Cambiar Contraseña
+                    </a>
+                    {% if user.rol == 'medico' %}
+                    <a href="{% url 'crear_paciente' %}" class="btn btn-outline-primary mb-2">
+                        <i class="fas fa-user-plus me-2"></i>Crear Paciente
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'logout' %}" class="btn btn-outline-danger">
+                        <i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Validación del formulario
+        const form = document.querySelector('form');
+        
+        form.addEventListener('submit', function(e) {
+            const email = document.getElementById('email').value;
+            
+            // Validar email
+            if (email && !isValidEmail(email)) {
+                e.preventDefault();
+                showToast('Por favor ingrese un email válido', 'warning');
+                return;
+            }
+        });
+        
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+        
+        // Efecto hover en las estadísticas
+        const statBadges = document.querySelectorAll('.badge.rounded-circle');
+        statBadges.forEach(badge => {
+            badge.addEventListener('mouseenter', function() {
+                this.style.transform = 'scale(1.1)';
+                this.style.transition = 'transform 0.3s ease';
+            });
+            
+            badge.addEventListener('mouseleave', function() {
+                this.style.transform = 'scale(1)';
+            });
+        });
+    });
+</script>
+{% endblock %}

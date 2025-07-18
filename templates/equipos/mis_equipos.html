@@ -1,0 +1,451 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Mis Equipos - Sistema de Solicitudes Médicas{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+    .team-card {
+        transition: all 0.3s ease;
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        margin-bottom: 25px;
+    }
+    
+    .team-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+    
+    .team-header {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        color: white;
+        padding: 25px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .team-header.coordinator {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    }
+    
+    .team-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 200%;
+        background: rgba(255, 255, 255, 0.1);
+        transform: rotate(45deg);
+    }
+    
+    .coordinator-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.8em;
+        font-weight: 500;
+    }
+    
+    .specialty-badge {
+        display: inline-block;
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.8em;
+        margin-top: 10px;
+    }
+    
+    .team-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 15px;
+        padding: 20px;
+        background: rgba(0, 123, 255, 0.05);
+    }
+    
+    .stat-item {
+        text-align: center;
+        padding: 15px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stat-number {
+        font-size: 1.8em;
+        font-weight: bold;
+        color: #007bff;
+        margin-bottom: 5px;
+    }
+    
+    .stat-label {
+        font-size: 0.9em;
+        color: #6c757d;
+        font-weight: 500;
+    }
+    
+    .team-actions {
+        padding: 20px;
+        background: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .btn-action {
+        border-radius: 25px;
+        padding: 8px 20px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .btn-action:hover {
+        transform: translateY(-2px);
+        text-decoration: none;
+    }
+    
+    .page-header {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        color: white;
+        padding: 40px 0;
+        margin-bottom: 30px;
+        border-radius: 15px;
+        text-align: center;
+    }
+    
+    .section-title {
+        font-size: 1.5em;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .section-title i {
+        color: #007bff;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #6c757d;
+        background: #f8f9fa;
+        border-radius: 15px;
+        margin-bottom: 30px;
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 20px;
+    }
+    
+    .role-badge {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 15px;
+        font-size: 0.75em;
+        font-weight: 500;
+        margin-left: 10px;
+    }
+    
+    .role-coordinador {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        color: white;
+    }
+    
+    .role-miembro {
+        background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+        color: white;
+    }
+    
+    .team-members-preview {
+        padding: 0 20px 20px 20px;
+        background: white;
+    }
+    
+    .member-avatar {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 0.9em;
+        margin-right: 5px;
+        margin-bottom: 5px;
+    }
+    
+    .recent-activity {
+        padding: 15px 20px;
+        background: rgba(40, 167, 69, 0.05);
+        border-top: 1px solid #e9ecef;
+    }
+    
+    .activity-item {
+        font-size: 0.9em;
+        color: #6c757d;
+        margin-bottom: 5px;
+    }
+    
+    .activity-item:last-child {
+        margin-bottom: 0;
+    }
+    
+    .activity-time {
+        font-size: 0.8em;
+        color: #999;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1><i class="fas fa-users-cog"></i> Mis Equipos de Trabajo</h1>
+        <p class="mb-0">Gestión de los equipos donde participas como coordinador o miembro</p>
+    </div>
+
+    <!-- Teams as Coordinator -->
+    {% if equipos_coordinador %}
+    <div class="section-title">
+        <i class="fas fa-crown"></i>
+        Equipos que Coordino
+    </div>
+    
+    <div class="row">
+        {% for equipo in equipos_coordinador %}
+        <div class="col-lg-6 col-xl-4 mb-4">
+            <div class="team-card">
+                <div class="team-header coordinator">
+                    <div class="coordinator-badge">
+                        <i class="fas fa-crown"></i> Coordinador
+                    </div>
+                    <h5 class="mb-0">
+                        <i class="{{ equipo.especialidad.icono }}"></i>
+                        {{ equipo.nombre }}
+                    </h5>
+                    <div class="specialty-badge">
+                        {{ equipo.especialidad.nombre }}
+                    </div>
+                </div>
+                
+                <div class="team-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">{{ equipo.total_miembros }}</div>
+                        <div class="stat-label">Miembros</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">{{ equipo.solicitudes_activas }}</div>
+                        <div class="stat-label">Casos Activos</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">
+                            {% if equipo.solicitudes_asignadas.count > 0 %}
+                                {{ equipo.solicitudes_asignadas.filter.estado='completada'.count }}
+                            {% else %}
+                                0
+                            {% endif %}
+                        </div>
+                        <div class="stat-label">Completados</div>
+                    </div>
+                </div>
+                
+                <div class="team-members-preview">
+                    <small class="text-muted">Miembros del equipo:</small><br>
+                    {% for miembro in equipo.miembros.all|slice:":6" %}
+                        <div class="member-avatar" title="{{ miembro.nombre_completo }}">
+                            {{ miembro.first_name|first }}{{ miembro.last_name|first }}
+                        </div>
+                    {% endfor %}
+                    {% if equipo.miembros.count > 6 %}
+                        <span class="text-muted">+{{ equipo.miembros.count|add:"-6" }} más</span>
+                    {% endif %}
+                </div>
+                
+                <div class="recent-activity">
+                    <small class="text-muted">
+                        <i class="fas fa-clock"></i> 
+                        Última actualización: {{ equipo.fecha_actualizacion|date:"d/m/Y H:i" }}
+                    </small>
+                </div>
+                
+                <div class="team-actions">
+                    <div>
+                        <small class="text-muted">Creado: {{ equipo.fecha_creacion|date:"d/m/Y" }}</small>
+                    </div>
+                    <div>
+                        <a href="{% url 'equipos:detalle_equipo' equipo.id %}" class="btn btn-primary btn-sm btn-action">
+                            <i class="fas fa-eye"></i> Ver Detalles
+                        </a>
+                        <a href="{% url 'equipos:chat_equipo' equipo.id %}" class="btn btn-success btn-sm btn-action">
+                            <i class="fas fa-comments"></i> Chat
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Teams as Member -->
+    {% if equipos_miembro %}
+    <div class="section-title">
+        <i class="fas fa-users"></i>
+        Equipos donde Participo
+    </div>
+    
+    <div class="row">
+        {% for equipo in equipos_miembro %}
+        <div class="col-lg-6 col-xl-4 mb-4">
+            <div class="team-card">
+                <div class="team-header">
+                    <div class="coordinator-badge">
+                        <i class="fas fa-user"></i> Miembro
+                    </div>
+                    <h5 class="mb-0">
+                        <i class="{{ equipo.especialidad.icono }}"></i>
+                        {{ equipo.nombre }}
+                    </h5>
+                    <div class="specialty-badge">
+                        {{ equipo.especialidad.nombre }}
+                    </div>
+                </div>
+                
+                <div class="team-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">{{ equipo.total_miembros }}</div>
+                        <div class="stat-label">Miembros</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">{{ equipo.solicitudes_activas }}</div>
+                        <div class="stat-label">Casos Activos</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">
+                            {% with mi_membership=equipo.memberships.filter.usuario=user.first %}
+                                {% if mi_membership %}
+                                    {{ mi_membership.rol_en_equipo|title }}
+                                {% else %}
+                                    Miembro
+                                {% endif %}
+                            {% endwith %}
+                        </div>
+                        <div class="stat-label">Mi Rol</div>
+                    </div>
+                </div>
+                
+                <div class="team-members-preview">
+                    <small class="text-muted">Coordinador:</small><br>
+                    {% if equipo.coordinador %}
+                        <div class="member-avatar" title="{{ equipo.coordinador.nombre_completo }}">
+                            {{ equipo.coordinador.first_name|first }}{{ equipo.coordinador.last_name|first }}
+                        </div>
+                        <small class="text-muted">{{ equipo.coordinador.nombre_completo }}</small>
+                    {% else %}
+                        <small class="text-muted">Sin coordinador asignado</small>
+                    {% endif %}
+                </div>
+                
+                <div class="recent-activity">
+                    <small class="text-muted">
+                        <i class="fas fa-clock"></i> 
+                        Última actualización: {{ equipo.fecha_actualizacion|date:"d/m/Y H:i" }}
+                    </small>
+                </div>
+                
+                <div class="team-actions">
+                    <div>
+                        <small class="text-muted">Participando desde: {{ equipo.fecha_creacion|date:"d/m/Y" }}</small>
+                    </div>
+                    <div>
+                        <a href="{% url 'equipos:detalle_equipo' equipo.id %}" class="btn btn-primary btn-sm btn-action">
+                            <i class="fas fa-eye"></i> Ver Detalles
+                        </a>
+                        <a href="{% url 'equipos:chat_equipo' equipo.id %}" class="btn btn-success btn-sm btn-action">
+                            <i class="fas fa-comments"></i> Chat
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Empty State -->
+    {% if not equipos_coordinador and not equipos_miembro %}
+    <div class="empty-state">
+        <i class="fas fa-users-slash"></i>
+        <h3>No participas en ningún equipo</h3>
+        <p>Aún no formas parte de ningún equipo de trabajo oncológico.</p>
+        <p>Contacta con un administrador para ser asignado a un equipo.</p>
+        <a href="{% url 'equipos:lista_equipos' %}" class="btn btn-primary btn-action">
+            <i class="fas fa-search"></i> Explorar Equipos
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Quick Actions -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="text-center">
+                <a href="{% url 'equipos:lista_equipos' %}" class="btn btn-outline-primary btn-action">
+                    <i class="fas fa-list"></i> Ver Todos los Equipos
+                </a>
+                <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary btn-action">
+                    <i class="fas fa-home"></i> Ir al Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add hover effects for team cards
+    const teamCards = document.querySelectorAll('.team-card');
+    
+    teamCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+    
+    // Auto-refresh for active cases count
+    setInterval(function() {
+        if (document.visibilityState === 'visible') {
+            // Refresh the active cases count every 30 seconds
+            const statNumbers = document.querySelectorAll('.stat-number');
+            // This could be enhanced with AJAX calls to update stats
+        }
+    }, 30000);
+});
+</script>
+{% endblock %}

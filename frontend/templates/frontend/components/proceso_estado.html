@@ -1,0 +1,36 @@
+{% load proceso_estado %}
+
+<div class="proceso-estado">
+    <h4>Estado de la Solicitud</h4>
+    <div class="progreso-wrapper">
+        <div class="progreso-linea">
+            <div class="progreso-activo" style="width: {{ porcentaje_progreso }}%;"></div>
+        </div>
+    </div>
+    <div class="proceso-pasos">
+        {% for paso in pasos %}
+        <div class="paso {% if paso.activo %}{{ paso.id }}{% else %}inactivo{% endif %}">
+            <div class="paso-icono">{{ paso.icono }}</div>
+            <div class="paso-titulo">{{ paso.titulo }}</div>
+            <div class="paso-descripcion">{{ paso.descripcion }}</div>
+            {% if paso.fecha %}
+            <div class="paso-fecha">{{ paso.fecha|date:"d/m/Y" }}</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    <div class="proceso-detalles">
+        <div class="detalle-item">
+            <span class="detalle-label">Estado Actual:</span>
+            <span class="detalle-valor">{{ estado_actual|capfirst }}</span>
+        </div>
+        <div class="detalle-item">
+            <span class="detalle-label">Prioridad:</span>
+            <span class="detalle-valor prioridad-badge {{ prioridad_clase }}">{{ solicitud.prioridad|capfirst }}</span>
+        </div>
+        <div class="detalle-item">
+            <span class="detalle-label">Días Transcurridos:</span>
+            <span class="detalle-valor">{{ dias_transcurridos }}</span>
+        </div>
+    </div>
+</div>

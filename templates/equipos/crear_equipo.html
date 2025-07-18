@@ -1,0 +1,204 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Crear Nuevo Equipo de Trabajo - Sistema de Solicitudes Médicas{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+    .form-container {
+        max-width: 600px;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        padding: 40px;
+        margin-top: 30px;
+        margin-bottom: 30px;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 10px;
+        display: block;
+    }
+    
+    .form-control, .form-select {
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        padding: 12px 15px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    
+    .btn-submit {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        border: none;
+        border-radius: 25px;
+        padding: 12px 30px;
+        font-weight: 600;
+        color: white;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+    }
+    
+    .btn-cancel {
+        background: #6c757d;
+        border: none;
+        border-radius: 25px;
+        padding: 12px 30px;
+        font-weight: 600;
+        color: white;
+        transition: all 0.3s ease;
+        margin-right: 10px;
+    }
+    
+    .btn-cancel:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(108, 117, 125, 0.4);
+    }
+    
+    .required-field::after {
+        content: "*";
+        color: #dc3545;
+        font-weight: bold;
+    }
+    
+    .page-header {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        color: white;
+        padding: 30px 0;
+        margin-bottom: 30px;
+        border-radius: 15px;
+        text-align: center;
+    }
+    
+    .character-counter {
+        text-align: right;
+        font-size: 12px;
+        color: #6c757d;
+        margin-top: 5px;
+    }
+    
+    .character-counter.warning {
+        color: #ffc107;
+    }
+    
+    .character-counter.danger {
+        color: #dc3545;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1><i class="fas fa-users-cog"></i> Crear Nuevo Equipo de Trabajo</h1>
+        <p class="mb-0">Define y organiza tu equipo multidisciplinario especializado en oncología.</p>
+    </div>
+
+    <!-- Form -->
+    <div class="form-container mx-auto">
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="form-group mb-3">
+                <label for="nombre" class="form-label required-field">Nombre del Equipo</label>
+                <input type="text" name="nombre" id="nombre" class="form-control" placeholder="Nombre del equipo" required maxlength="200">
+                <div class="character-counter" data-target="nombre">0/200</div>
+            </div>
+
+            <div class="form-group mb-3">
+                <label for="especialidad" class="form-label required-field">Especialidad</label>
+                <select name="especialidad" id="especialidad" class="form-select" required>
+                    <option value="">Selecciona una especialidad</option>
+                    {% for especialidad in especialidades %}
+                        <option value="{{ especialidad.id }}">{{ especialidad.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group mb-3">
+                <label for="descripcion" class="form-label">Descripción del Equipo</label>
+                <textarea name="descripcion" id="descripcion" class="form-control" placeholder="Descripción del equipo y sus funciones..." rows="5" maxlength="500"></textarea>
+                <div class="character-counter" data-target="descripcion">0/500</div>
+            </div>
+
+            <div class="form-group mb-3">
+                <label for="coordinador" class="form-label required-field">Coordinador del Equipo</label>
+                <select name="coordinador" id="coordinador" class="form-select" required>
+                    <option value="">Selecciona un coordinador</option>
+                    {% for medico in medicos %}
+                        <option value="{{ medico.id }}">{{ medico.get_full_name }} ({{ medico.perfil_medico.especialidad }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group mt-4 d-flex justify-content-between">
+                <div>
+                    <a href="{% url 'equipos:lista_equipos' %}" class="btn btn-cancel">
+                        <i class="fas fa-times"></i> Cancelar
+                    </a>
+                </div>
+                <div>
+                    <button type="submit" class="btn btn-submit">
+                        <i class="fas fa-check"></i> Crear Equipo
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const textareas = document.querySelectorAll('textarea[maxlength]');
+    const inputs = document.querySelectorAll('input[maxlength]');
+
+    const updateCounter = (element, target) => {
+        const count = element.value.length;
+        target.textContent = `${count}/${element.getAttribute('maxlength')}`;
+
+        target.classList.remove('warning', 'danger');
+        if (count > element.getAttribute('maxlength') * 0.8) {
+            target.classList.add('warning');
+        }
+        if (count > element.getAttribute('maxlength') * 0.95) {
+            target.classList.add('danger');
+        }
+    };
+
+    textareas.forEach(textarea => {
+        const counter = document.querySelector(`[data-target="${textarea.id}"]`);
+        if (counter) {
+            textarea.addEventListener('input', function() {
+                updateCounter(textarea, counter);
+            });
+            updateCounter(textarea, counter);
+        }
+    });
+
+    inputs.forEach(input => {
+        const counter = document.querySelector(`[data-target="${input.id}"]`);
+        if (counter) {
+            input.addEventListener('input', function() {
+                updateCounter(input, counter);
+            });
+            updateCounter(input, counter);
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,428 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Nueva Solicitud de Opinión Médica{% endblock %}
+
+{% block extra_css %}
+<style>
+    .file-upload-area {
+        border: 2px dashed #dee2e6;
+        border-radius: 8px;
+        padding: 2rem;
+        text-align: center;
+        background-color: #f8f9fa;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    .file-upload-area:hover {
+        border-color: #007bff;
+        background-color: #e7f3ff;
+    }
+    .file-upload-area.drag-over {
+        border-color: #007bff;
+        background-color: #e7f3ff;
+        transform: scale(1.02);
+    }
+    .form-section {
+        background: white;
+        border-radius: 10px;
+        padding: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+    }
+    .section-title {
+        color: #495057;
+        border-bottom: 2px solid #007bff;
+        padding-bottom: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+    .priority-selector {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    .priority-option {
+        flex: 1;
+        min-width: 120px;
+    }
+    .priority-option input[type="radio"] {
+        display: none;
+    }
+    .priority-option label {
+        display: block;
+        padding: 0.75rem;
+        border: 2px solid #dee2e6;
+        border-radius: 8px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .priority-option input[type="radio"]:checked + label {
+        border-color: #007bff;
+        background-color: #e7f3ff;
+        color: #007bff;
+        font-weight: bold;
+    }
+    .priority-baja label { border-left: 4px solid #28a745; }
+    .priority-media label { border-left: 4px solid #ffc107; }
+    .priority-alta label { border-left: 4px solid #fd7e14; }
+    .priority-urgente label { border-left: 4px solid #dc3545; }
+    .char-counter {
+        font-size: 0.875rem;
+        color: #6c757d;
+        text-align: right;
+        margin-top: 0.25rem;
+    }
+    .required-field::after {
+        content: " *";
+        color: #dc3545;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Header -->
+            <div class="text-center mb-4">
+                <h1 class="display-6 fw-bold mb-2">Nueva Solicitud de Opinión Médica</h1>
+                <p class="text-muted">Complete el formulario con la información de su caso médico</p>
+            </div>
+
+            <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                {% csrf_token %}
+                
+                <!-- Información Básica -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-info-circle me-2"></i>Información Básica
+                    </h3>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="titulo" class="form-label required-field">Título de la Solicitud</label>
+                                <input type="text" class="form-control" id="titulo" name="titulo" required maxlength="200">
+                                <div class="char-counter">0/200 caracteres</div>
+                                <div class="invalid-feedback">
+                                    Por favor, ingrese un título para su solicitud.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="especialidad_requerida" class="form-label required-field">Especialidad Médica Requerida</label>
+                                <input type="text" class="form-control" id="especialidad_requerida" name="especialidad_requerida" 
+                                       required maxlength="100" list="especialidades-list">
+                                <datalist id="especialidades-list">
+                                    {% for especialidad in especialidades %}
+                                    <option value="{{ especialidad }}">{{ especialidad }}</option>
+                                    {% endfor %}
+                                    <option value="Cardiología">Cardiología</option>
+                                    <option value="Neurología">Neurología</option>
+                                    <option value="Oncología">Oncología</option>
+                                    <option value="Traumatología">Traumatología</option>
+                                    <option value="Ginecología">Ginecología</option>
+                                    <option value="Pediatría">Pediatría</option>
+                                    <option value="Dermatología">Dermatología</option>
+                                    <option value="Oftalmología">Oftalmología</option>
+                                    <option value="Psiquiatría">Psiquiatría</option>
+                                    <option value="Urología">Urología</option>
+                                </datalist>
+                                <div class="invalid-feedback">
+                                    Por favor, especifique la especialidad médica requerida.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Prioridad -->
+                    <div class="mb-3">
+                        <label class="form-label required-field">Prioridad del Caso</label>
+                        <div class="priority-selector">
+                            <div class="priority-option priority-baja">
+                                <input type="radio" id="prioridad-baja" name="prioridad" value="baja">
+                                <label for="prioridad-baja">
+                                    <i class="fas fa-circle text-success me-2"></i>Baja
+                                </label>
+                            </div>
+                            <div class="priority-option priority-media">
+                                <input type="radio" id="prioridad-media" name="prioridad" value="media" checked>
+                                <label for="prioridad-media">
+                                    <i class="fas fa-circle text-warning me-2"></i>Media
+                                </label>
+                            </div>
+                            <div class="priority-option priority-alta">
+                                <input type="radio" id="prioridad-alta" name="prioridad" value="alta">
+                                <label for="prioridad-alta">
+                                    <i class="fas fa-circle text-orange me-2"></i>Alta
+                                </label>
+                            </div>
+                            <div class="priority-option priority-urgente">
+                                <input type="radio" id="prioridad-urgente" name="prioridad" value="urgente">
+                                <label for="prioridad-urgente">
+                                    <i class="fas fa-circle text-danger me-2"></i>Urgente
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Descripción del Caso -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-file-medical me-2"></i>Descripción del Caso
+                    </h3>
+                    
+                    <div class="mb-3">
+                        <label for="descripcion_caso" class="form-label required-field">Descripción Detallada del Caso</label>
+                        <textarea class="form-control" id="descripcion_caso" name="descripcion_caso" rows="6" required
+                                  placeholder="Describa detalladamente su caso médico, síntomas, duración, etc."></textarea>
+                        <div class="char-counter">0/2000 caracteres</div>
+                        <div class="invalid-feedback">
+                            Por favor, proporcione una descripción detallada de su caso.
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="diagnostico_inicial" class="form-label">Diagnóstico Inicial (si existe)</label>
+                                <textarea class="form-control" id="diagnostico_inicial" name="diagnostico_inicial" rows="3"
+                                          placeholder="Diagnóstico proporcionado por su médico tratante"></textarea>
+                                <div class="char-counter">0/1000 caracteres</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="tratamiento_actual" class="form-label">Tratamiento Actual</label>
+                                <textarea class="form-control" id="tratamiento_actual" name="tratamiento_actual" rows="3"
+                                          placeholder="Tratamiento que está recibiendo actualmente"></textarea>
+                                <div class="char-counter">0/1000 caracteres</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Documentos Médicos -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-paperclip me-2"></i>Documentos Médicos
+                    </h3>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Adjunte sus documentos médicos</label>
+                        <div class="file-upload-area" onclick="document.getElementById('documentos').click()">
+                            <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Arrastra y suelta archivos aquí</h5>
+                            <p class="text-muted mb-0">o <span class="text-primary">haz clic para seleccionar archivos</span></p>
+                            <small class="text-muted">Formatos aceptados: PDF, DOC, DOCX, JPG, PNG (máx. 10MB cada uno)</small>
+                        </div>
+                        <input type="file" id="documentos" name="documentos" multiple accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" hidden>
+                        <div id="file-list" class="mt-3"></div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Documentos importantes:</strong> Incluya resultados de exámenes, radiografías, informes médicos, 
+                        recetas y cualquier otro documento relevante para su caso.
+                    </div>
+                </div>
+
+                <!-- Botones de Acción -->
+                <div class="form-section">
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'dashboard' %}" class="btn btn-secondary btn-lg">
+                            <i class="fas fa-arrow-left me-2"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-paper-plane me-2"></i>Enviar Solicitud
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmación -->
+<div class="modal fade" id="confirmModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Envío</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Está seguro de que desea enviar esta solicitud de opinión médica?</p>
+                <p class="text-muted mb-0">Una vez enviada, no podrá modificar la información básica del caso.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="confirmSubmit">Sí, Enviar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Configurar contadores de caracteres
+        setupCharCounters();
+        
+        // Configurar validación personalizada
+        setupCustomValidation();
+        
+        // Configurar área de subida de archivos
+        setupFileUpload();
+        
+        // Configurar modal de confirmación
+        setupConfirmModal();
+    });
+    
+    function setupCharCounters() {
+        const textInputs = document.querySelectorAll('input[type="text"], textarea');
+        
+        textInputs.forEach(input => {
+            const counter = input.parentElement.querySelector('.char-counter');
+            if (counter) {
+                const maxLength = input.getAttribute('maxlength') || 2000;
+                
+                input.addEventListener('input', function() {
+                    const currentLength = this.value.length;
+                    counter.textContent = `${currentLength}/${maxLength} caracteres`;
+                    
+                    // Cambiar color según proximidad al límite
+                    if (currentLength > maxLength * 0.9) {
+                        counter.style.color = '#dc3545';
+                    } else if (currentLength > maxLength * 0.75) {
+                        counter.style.color = '#ffc107';
+                    } else {
+                        counter.style.color = '#6c757d';
+                    }
+                });
+            }
+        });
+    }
+    
+    function setupCustomValidation() {
+        const form = document.querySelector('.needs-validation');
+        
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            } else {
+                event.preventDefault();
+                // Mostrar modal de confirmación
+                const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
+                modal.show();
+            }
+            
+            form.classList.add('was-validated');
+        });
+    }
+    
+    function setupFileUpload() {
+        const fileUploadArea = document.querySelector('.file-upload-area');
+        const fileInput = document.getElementById('documentos');
+        const fileList = document.getElementById('file-list');
+        
+        // Eventos drag and drop
+        fileUploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('drag-over');
+        });
+        
+        fileUploadArea.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            this.classList.remove('drag-over');
+        });
+        
+        fileUploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('drag-over');
+            
+            const files = e.dataTransfer.files;
+            handleFileSelection(files);
+        });
+        
+        fileInput.addEventListener('change', function(e) {
+            handleFileSelection(e.target.files);
+        });
+        
+        function handleFileSelection(files) {
+            fileList.innerHTML = '';
+            
+            Array.from(files).forEach(function(file, index) {
+                // Validar tamaño de archivo (10MB)
+                if (file.size > 10 * 1024 * 1024) {
+                    showToast(`El archivo ${file.name} es demasiado grande. Máximo 10MB.`, 'warning');
+                    return;
+                }
+                
+                // Validar tipo de archivo
+                const validTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png', 'text/plain'];
+                if (!validTypes.includes(file.type)) {
+                    showToast(`El archivo ${file.name} no es un tipo válido.`, 'warning');
+                    return;
+                }
+                
+                const fileItem = document.createElement('div');
+                fileItem.className = 'alert alert-info d-flex justify-content-between align-items-center';
+                fileItem.innerHTML = `
+                    <div>
+                        <i class="fas fa-file me-2"></i>
+                        <strong>${file.name}</strong>
+                        <small class="text-muted ms-2">(${formatFileSize(file.size)})</small>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeFile(this, ${index})">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                fileList.appendChild(fileItem);
+            });
+        }
+    }
+    
+    function setupConfirmModal() {
+        const confirmButton = document.getElementById('confirmSubmit');
+        const form = document.querySelector('.needs-validation');
+        
+        confirmButton.addEventListener('click', function() {
+            // Ocultar modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('confirmModal'));
+            modal.hide();
+            
+            // Enviar formulario
+            form.submit();
+        });
+    }
+    
+    function removeFile(button, index) {
+        const fileInput = document.getElementById('documentos');
+        const dt = new DataTransfer();
+        
+        // Recrear FileList sin el archivo eliminado
+        Array.from(fileInput.files).forEach((file, i) => {
+            if (i !== index) {
+                dt.items.add(file);
+            }
+        });
+        
+        fileInput.files = dt.files;
+        button.closest('.alert').remove();
+    }
+    
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+</script>
+{% endblock %}

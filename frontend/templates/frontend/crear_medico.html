@@ -1,0 +1,367 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Crear Cuenta de Médico{% endblock %}
+
+{% block extra_css %}
+<style>
+    .create-doctor-container {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
+    .create-doctor-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        overflow: hidden;
+        max-width: 800px;
+        width: 100%;
+        margin: 0 auto;
+    }
+    .card-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        text-align: center;
+    }
+    .card-body {
+        padding: 2rem;
+    }
+    .form-floating {
+        margin-bottom: 1rem;
+    }
+    .doctor-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.8;
+    }
+    .generated-credentials {
+        background: #e7f3ff;
+        border: 1px solid #b3d9ff;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin: 1.5rem 0;
+        display: none;
+    }
+    .credential-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding: 0.75rem;
+        background: white;
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+    }
+    .copy-btn {
+        background: transparent;
+        border: none;
+        color: #007bff;
+        cursor: pointer;
+        padding: 0.25rem;
+    }
+    .copy-btn:hover {
+        color: #0056b3;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="create-doctor-container">
+    <div class="container">
+        <div class="create-doctor-card">
+            <div class="card-header">
+                <i class="fas fa-user-md doctor-icon"></i>
+                <h2 class="mb-3">Crear Cuenta de Médico</h2>
+                <p class="lead mb-0">Complete la información para crear una nueva cuenta de médico</p>
+            </div>
+            
+            <div class="card-body">
+                <form method="post" id="createDoctorForm">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="first_name" name="first_name" 
+                                       placeholder="Nombres" required>
+                                <label for="first_name">Nombres *</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="last_name" name="last_name" 
+                                       placeholder="Apellidos" required>
+                                <label for="last_name">Apellidos *</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-floating">
+                        <input type="email" class="form-control" id="email" name="email" 
+                               placeholder="Email" required>
+                        <label for="email">Correo Electrónico *</label>
+                        <div class="form-text">Se enviará un correo con las credenciales de acceso</div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="numero_colegiado" name="numero_colegiado" 
+                                       placeholder="Número de Colegiado" required>
+                                <label for="numero_colegiado">Número de Colegiado *</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="especialidad" name="especialidad" 
+                                       placeholder="Especialidad" required list="especialidades-list">
+                                <label for="especialidad">Especialidad *</label>
+                                <datalist id="especialidades-list">
+                                    <option value="Cardiología">
+                                    <option value="Neurología">
+                                    <option value="Oncología">
+                                    <option value="Traumatología">
+                                    <option value="Ginecología">
+                                    <option value="Pediatría">
+                                    <option value="Dermatología">
+                                    <option value="Oftalmología">
+                                    <option value="Psiquiatría">
+                                    <option value="Urología">
+                                    <option value="Endocrinología">
+                                    <option value="Gastroenterología">
+                                    <option value="Neumología">
+                                    <option value="Reumatología">
+                                </datalist>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="number" class="form-control" id="años_experiencia" name="años_experiencia" 
+                                       placeholder="Años de Experiencia" min="0" max="50" required>
+                                <label for="años_experiencia">Años de Experiencia *</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="tel" class="form-control" id="telefono" name="telefono" 
+                                       placeholder="Teléfono">
+                                <label for="telefono">Teléfono (opcional)</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-floating">
+                        <input type="text" class="form-control" id="hospital_clinica" name="hospital_clinica" 
+                               placeholder="Hospital/Clínica">
+                        <label for="hospital_clinica">Hospital/Clínica (opcional)</label>
+                    </div>
+                    
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="activo" name="activo" checked>
+                        <label class="form-check-label" for="activo">
+                            <strong>Médico activo para recibir solicitudes</strong>
+                        </label>
+                    </div>
+                    
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" type="checkbox" id="enviar_email" name="enviar_email" checked>
+                        <label class="form-check-label" for="enviar_email">
+                            <strong>Enviar credenciales por correo electrónico</strong>
+                        </label>
+                        <div class="form-text">Se generará una contraseña automática y se enviará al médico</div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary btn-lg">
+                            <i class="fas fa-arrow-left me-2"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-user-plus me-2"></i>Crear Médico
+                        </button>
+                    </div>
+                </form>
+                
+                <!-- Credenciales generadas -->
+                <div id="generated-credentials" class="generated-credentials">
+                    <h5 class="text-success mb-3">
+                        <i class="fas fa-check-circle me-2"></i>Cuenta creada exitosamente
+                    </h5>
+                    <p class="text-muted mb-3">Las siguientes credenciales han sido generadas:</p>
+                    
+                    <div class="credential-item">
+                        <div>
+                            <strong>Usuario:</strong>
+                            <span id="generated-username" class="ms-2"></span>
+                        </div>
+                        <button type="button" class="copy-btn" onclick="copyToClipboard('generated-username')">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="credential-item">
+                        <div>
+                            <strong>Contraseña:</strong>
+                            <span id="generated-password" class="ms-2 font-monospace"></span>
+                        </div>
+                        <button type="button" class="copy-btn" onclick="copyToClipboard('generated-password')">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="credential-item">
+                        <div>
+                            <strong>Email:</strong>
+                            <span id="generated-email" class="ms-2"></span>
+                        </div>
+                        <button type="button" class="copy-btn" onclick="copyToClipboard('generated-email')">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="alert alert-info mt-3">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <span id="email-status">Las credenciales han sido enviadas al correo del médico.</span>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <a href="{% url 'dashboard' %}" class="btn btn-success me-2">
+                            <i class="fas fa-home me-2"></i>Ir al Dashboard
+                        </a>
+                        <button type="button" class="btn btn-outline-primary" onclick="createAnother()">
+                            <i class="fas fa-plus me-2"></i>Crear Otro Médico
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('createDoctorForm');
+        
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (!validateForm()) {
+                return;
+            }
+            
+            // Mostrar loading
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creando médico...';
+            submitBtn.disabled = true;
+            
+            // Simular creación de usuario (aquí iría la llamada AJAX real)
+            setTimeout(() => {
+                createDoctor();
+            }, 2000);
+        });
+    });
+    
+    function validateForm() {
+        const requiredFields = ['first_name', 'last_name', 'email', 'numero_colegiado', 'especialidad', 'años_experiencia'];
+        
+        for (let field of requiredFields) {
+            const input = document.getElementById(field);
+            if (!input.value.trim()) {
+                showToast(`Por favor complete el campo: ${input.labels[0].textContent}`, 'warning');
+                input.focus();
+                return false;
+            }
+        }
+        
+        // Validar email
+        const email = document.getElementById('email').value;
+        if (!isValidEmail(email)) {
+            showToast('Por favor ingrese un email válido', 'warning');
+            document.getElementById('email').focus();
+            return false;
+        }
+        
+        return true;
+    }
+    
+    function isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+    
+    function createDoctor() {
+        // Simular datos generados (en la implementación real esto vendría del servidor)
+        const formData = new FormData(document.getElementById('createDoctorForm'));
+        const firstName = formData.get('first_name');
+        const lastName = formData.get('last_name');
+        const email = formData.get('email');
+        
+        // Generar username y password
+        const username = `dr.${firstName.toLowerCase()}.${lastName.toLowerCase()}`.replace(/\s+/g, '');
+        const password = generatePassword();
+        
+        // Mostrar credenciales
+        document.getElementById('generated-username').textContent = username;
+        document.getElementById('generated-password').textContent = password;
+        document.getElementById('generated-email').textContent = email;
+        
+        // Ocultar formulario y mostrar credenciales
+        document.getElementById('createDoctorForm').style.display = 'none';
+        document.getElementById('generated-credentials').style.display = 'block';
+        
+        // Simular envío de email
+        const enviarEmail = formData.get('enviar_email');
+        if (enviarEmail) {
+            setTimeout(() => {
+                document.getElementById('email-status').innerHTML = 
+                    '<i class="fas fa-check text-success me-2"></i>Correo enviado exitosamente al médico.';
+            }, 1000);
+        } else {
+            document.getElementById('email-status').textContent = 
+                'Las credenciales NO han sido enviadas por correo. Compártalas manualmente.';
+        }
+        
+        showToast('Cuenta de médico creada exitosamente', 'success');
+    }
+    
+    function generatePassword() {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let password = '';
+        for (let i = 0; i < 12; i++) {
+            password += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return password;
+    }
+    
+    function copyToClipboard(elementId) {
+        const element = document.getElementById(elementId);
+        const text = element.textContent;
+        
+        navigator.clipboard.writeText(text).then(() => {
+            showToast('Copiado al portapapeles', 'success');
+        }).catch(() => {
+            showToast('Error al copiar', 'error');
+        });
+    }
+    
+    function createAnother() {
+        document.getElementById('createDoctorForm').style.display = 'block';
+        document.getElementById('generated-credentials').style.display = 'none';
+        
+        // Limpiar formulario
+        document.getElementById('createDoctorForm').reset();
+        
+        // Habilitar botón de submit
+        const submitBtn = document.querySelector('button[type="submit"]');
+        submitBtn.innerHTML = '<i class="fas fa-user-plus me-2"></i>Crear Médico';
+        submitBtn.disabled = false;
+    }
+</script>
+{% endblock %}

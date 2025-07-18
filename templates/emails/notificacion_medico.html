@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuevo Paciente Registrado</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333333;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+            color: #ffffff;
+            padding: 2rem;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+        .header p {
+            margin: 0.5rem 0 0 0;
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+        .content {
+            padding: 2rem;
+        }
+        .patient-info {
+            background-color: #BBDEFB;
+            border: 2px solid #2A628F;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        .patient-info h3 {
+            color: #2A628F;
+            margin-top: 0;
+            font-size: 1.2rem;
+        }
+        .info-item {
+            margin: 0.75rem 0;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #E0E0E0;
+        }
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        .info-label {
+            font-weight: 600;
+            color: #666666;
+            font-size: 0.9rem;
+        }
+        .info-value {
+            color: #2A628F;
+            font-weight: 500;
+            font-size: 1rem;
+        }
+        .success-box {
+            background-color: #D4EDDA;
+            border: 1px solid #4CAF50;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            text-align: center;
+        }
+        .success-box h4 {
+            color: #155724;
+            margin-top: 0;
+            font-size: 1rem;
+        }
+        .success-box p {
+            color: #155724;
+            margin-bottom: 0;
+        }
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 2rem;
+            background-color: #2A628F;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 600;
+            text-align: center;
+            margin: 1rem 0;
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            background-color: #1f4f73;
+            text-decoration: none;
+            color: #ffffff;
+        }
+        .footer {
+            background-color: #f8f9fa;
+            color: #666666;
+            padding: 1.5rem;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        .footer p {
+            margin: 0.5rem 0;
+        }
+        .icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="icon">👨‍⚕️</div>
+            <h1>Nuevo Paciente Registrado</h1>
+            <p>Sistema de Solicitud de Segundas Opiniones Médicas</p>
+        </div>
+        
+        <div class="content">
+            <h2>Estimado/a Dr. {{ medico.first_name }} {{ medico.last_name }},</h2>
+            
+            <p>Le informamos que se ha registrado un nuevo paciente en el sistema bajo su referencia médica.</p>
+            
+            <div class="patient-info">
+                <h3>📋 Información del Paciente</h3>
+                
+                <div class="info-item">
+                    <div class="info-label">Nombre Completo:</div>
+                    <div class="info-value">{{ paciente.first_name }} {{ paciente.last_name }}</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Correo Electrónico:</div>
+                    <div class="info-value">{{ paciente.email }}</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Usuario del Sistema:</div>
+                    <div class="info-value">{{ paciente.username }}</div>
+                </div>
+                
+                {% if paciente.telefono %}
+                <div class="info-item">
+                    <div class="info-label">Teléfono:</div>
+                    <div class="info-value">{{ paciente.telefono }}</div>
+                </div>
+                {% endif %}
+                
+                {% if paciente.fecha_nacimiento %}
+                <div class="info-item">
+                    <div class="info-label">Fecha de Nacimiento:</div>
+                    <div class="info-value">{{ paciente.fecha_nacimiento|date:"d/m/Y" }}</div>
+                </div>
+                {% endif %}
+                
+                <div class="info-item">
+                    <div class="info-label">Fecha de Registro:</div>
+                    <div class="info-value">{{ paciente.fecha_creacion|date:"d/m/Y H:i" }}</div>
+                </div>
+            </div>
+            
+            <div class="success-box">
+                <h4>✅ Registro Completado</h4>
+                <p>El paciente ha recibido sus credenciales de acceso por correo electrónico y ya puede acceder al sistema.</p>
+            </div>
+            
+            <h3>¿Qué puede hacer ahora?</h3>
+            <ul style="color: #666666; line-height: 1.8;">
+                <li>📞 Contactar al paciente para coordinar su primera consulta</li>
+                <li>🔍 Revisar el historial médico cuando esté disponible</li>
+                <li>📝 Estar disponible para futuras solicitudes de opinión</li>
+                <li>💬 Comunicarse con el paciente a través del sistema</li>
+            </ul>
+            
+            <div style="text-align: center; margin: 2rem 0;">
+                <a href="http://localhost:8000/dashboard/" class="btn">🔗 Acceder al Sistema</a>
+            </div>
+            
+            <p>Si tiene alguna pregunta sobre este registro o necesita más información, no dude en contactarnos.</p>
+            
+            <p>Atentamente,<br>
+            <strong>Equipo del Sistema de Solicitud de Segundas Opiniones Médicas</strong></p>
+        </div>
+        
+        <div class="footer">
+            <p><strong>Sistema de Solicitud de Segundas Opiniones Médicas</strong></p>
+            <p>© 2025 - Todos los derechos reservados</p>
+            <p style="font-size: 0.8rem; color: #999;">
+                Este correo fue enviado automáticamente. Por favor no responda a este mensaje.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

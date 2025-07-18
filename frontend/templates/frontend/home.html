@@ -1,0 +1,285 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Inicio - Sistema de Solicitud de Segundas Opiniones Médicas{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 5rem 0;
+        margin-bottom: 3rem;
+    }
+    .feature-card {
+        transition: transform 0.3s;
+        height: 100%;
+    }
+    .feature-card:hover {
+        transform: translateY(-5px);
+    }
+    .stats-section {
+        background-color: #f8f9fa;
+        padding: 3rem 0;
+    }
+    .stat-item {
+        text-align: center;
+        padding: 2rem;
+    }
+    .stat-number {
+        font-size: 3rem;
+        font-weight: bold;
+        color: #007bff;
+        margin-bottom: 0.5rem;
+    }
+    .stat-label {
+        font-size: 1.1rem;
+        color: #6c757d;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">Sistema de Solicitud de Segundas Opiniones Médicas</h1>
+                <p class="lead mb-4">
+                    Conectamos pacientes con médicos especialistas para obtener segundas opiniones médicas 
+                    de forma rápida, segura y confiable.
+                </p>
+                <div class="d-flex gap-3">
+                    <a href="{% url 'register' %}" class="btn btn-light btn-lg">
+                        <i class="fas fa-user-plus me-2"></i>Registrarse
+                    </a>
+                    <a href="{% url 'login' %}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="text-center">
+                    <i class="fas fa-stethoscope" style="font-size: 10rem; opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-lg-8 mx-auto">
+                <h2 class="display-5 fw-bold mb-4">¿Cómo funciona?</h2>
+                <p class="lead text-muted">
+                    Nuestro sistema está diseñado para facilitar el proceso de obtener segundas opiniones médicas
+                </p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card feature-card shadow-sm border-0">
+                    <div class="card-body text-center p-4">
+                        <div class="mb-4">
+                            <i class="fas fa-user-plus text-primary" style="font-size: 3rem;"></i>
+                        </div>
+                        <h4 class="card-title mb-3">1. Regístrate</h4>
+                        <p class="card-text text-muted">
+                            Crea tu cuenta como paciente o médico especialista. 
+                            El proceso es rápido y seguro.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card feature-card shadow-sm border-0">
+                    <div class="card-body text-center p-4">
+                        <div class="mb-4">
+                            <i class="fas fa-file-medical text-primary" style="font-size: 3rem;"></i>
+                        </div>
+                        <h4 class="card-title mb-3">2. Envía tu caso</h4>
+                        <p class="card-text text-muted">
+                            Describe tu caso médico y adjunta los documentos necesarios. 
+                            Toda la información es confidencial.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card feature-card shadow-sm border-0">
+                    <div class="card-body text-center p-4">
+                        <div class="mb-4">
+                            <i class="fas fa-comments text-primary" style="font-size: 3rem;"></i>
+                        </div>
+                        <h4 class="card-title mb-3">3. Recibe la opinión</h4>
+                        <p class="card-text text-muted">
+                            Un médico especialista revisará tu caso y te proporcionará 
+                            una segunda opinión profesional.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="stats-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <div class="stat-number">{{ total_solicitudes }}</div>
+                    <div class="stat-label">Solicitudes Procesadas</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <div class="stat-number">{{ total_medicos }}</div>
+                    <div class="stat-label">Médicos Especialistas</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <div class="stat-number">{{ total_opiniones }}</div>
+                    <div class="stat-label">Opiniones Emitidas</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <div class="stat-number">{{ calificacion_promedio|floatformat:1 }}</div>
+                    <div class="stat-label">Calificación Promedio</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Benefits Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h2 class="display-6 fw-bold mb-4">Ventajas de nuestro sistema</h2>
+                <div class="row g-4">
+                    <div class="col-12">
+                        <div class="d-flex align-items-start">
+                            <i class="fas fa-shield-alt text-primary me-3 mt-1" style="font-size: 1.5rem;"></i>
+                            <div>
+                                <h5 class="mb-2">Seguridad y Privacidad</h5>
+                                <p class="text-muted mb-0">
+                                    Toda la información médica es tratada con la máxima confidencialidad
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="d-flex align-items-start">
+                            <i class="fas fa-clock text-primary me-3 mt-1" style="font-size: 1.5rem;"></i>
+                            <div>
+                                <h5 class="mb-2">Respuesta Rápida</h5>
+                                <p class="text-muted mb-0">
+                                    Recibe segundas opiniones en tiempo récord
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="d-flex align-items-start">
+                            <i class="fas fa-user-md text-primary me-3 mt-1" style="font-size: 1.5rem;"></i>
+                            <div>
+                                <h5 class="mb-2">Médicos Calificados</h5>
+                                <p class="text-muted mb-0">
+                                    Acceso a médicos especialistas con amplia experiencia
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="d-flex align-items-start">
+                            <i class="fas fa-star text-primary me-3 mt-1" style="font-size: 1.5rem;"></i>
+                            <div>
+                                <h5 class="mb-2">Calidad Garantizada</h5>
+                                <p class="text-muted mb-0">
+                                    Sistema de calificación que asegura la calidad del servicio
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="text-center">
+                    <i class="fas fa-heartbeat text-primary" style="font-size: 15rem; opacity: 0.1;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="bg-primary text-white py-5">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-lg-8 mx-auto">
+                <h2 class="display-6 fw-bold mb-4">¿Listo para comenzar?</h2>
+                <p class="lead mb-4">
+                    Únete a nuestra plataforma y obtén la segunda opinión médica que necesitas
+                </p>
+                <a href="{% url 'register' %}" class="btn btn-light btn-lg">
+                    <i class="fas fa-arrow-right me-2"></i>Comenzar Ahora
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Animación para los números de estadísticas
+    document.addEventListener('DOMContentLoaded', function() {
+        const statNumbers = document.querySelectorAll('.stat-number');
+        
+        const animateNumber = (element, targetNumber) => {
+            const duration = 2000;
+            const startTime = performance.now();
+            
+            const animate = (currentTime) => {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                const currentNumber = Math.floor(progress * targetNumber);
+                element.textContent = currentNumber;
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                }
+            };
+            
+            requestAnimationFrame(animate);
+        };
+        
+        // Observador para animar cuando los números sean visibles
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const targetNumber = parseInt(entry.target.textContent);
+                    animateNumber(entry.target, targetNumber);
+                    observer.unobserve(entry.target);
+                }
+            });
+        });
+        
+        statNumbers.forEach(number => {
+            observer.observe(number);
+        });
+    });
+</script>
+{% endblock %}

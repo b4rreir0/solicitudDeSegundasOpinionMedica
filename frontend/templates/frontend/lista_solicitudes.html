@@ -1,0 +1,518 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Solicitudes - {{ user.get_rol_display }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .filter-section {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    .solicitud-card {
+        border: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: transform 0.2s, box-shadow 0.2s;
+        margin-bottom: 1.5rem;
+    }
+    .solicitud-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    .priority-indicator {
+        width: 4px;
+        height: 100%;
+        position: absolute;
+        left: 0;
+        top: 0;
+        border-radius: 0 4px 4px 0;
+    }
+    .priority-baja { background-color: #28a745; }
+    .priority-media { background-color: #ffc107; }
+    .priority-alta { background-color: #fd7e14; }
+    .priority-urgente { background-color: #dc3545; }
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+    .search-box {
+        position: relative;
+    }
+    .search-box .search-icon {
+        position: absolute;
+        left: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+    }
+    .search-box input {
+        padding-left: 2.5rem;
+    }
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #6c757d;
+    }
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.3;
+    }
+    .quick-stats {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    .quick-stats .stat-item {
+        text-align: center;
+    }
+    .quick-stats .stat-number {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 0.25rem;
+    }
+    .quick-stats .stat-label {
+        font-size: 0.875rem;
+        opacity: 0.9;
+    }
+    .tag {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        background: #e9ecef;
+        border-radius: 15px;
+        font-size: 0.75rem;
+        margin-right: 0.5rem;
+        margin-bottom: 0.25rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="display-6 fw-bold mb-2">
+                {% if user.rol == 'paciente' %}
+                    Mis Solicitudes
+                {% elif user.rol == 'medico' %}
+                    Solicitudes Asignadas
+                {% else %}
+                    Todas las Solicitudes
+                {% endif %}
+            </h1>
+            <p class="text-muted mb-0">Gestiona y revisa las solicitudes de opinión médica</p>
+        </div>
+        <div class="col-md-4 text-end">
+            {% if user.rol == 'paciente' %}
+                <a href="{% url 'crear_solicitud' %}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-plus me-2"></i>Nueva Solicitud
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Estadísticas rápidas -->
+    <div class="quick-stats">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <div class="stat-number">{{ solicitudes.paginator.count }}</div>
+                    <div class="stat-label">Total</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <div class="stat-number">{{ solicitudes.paginator.count }}</div>
+                    <div class="stat-label">Filtradas</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <div class="stat-number">{{ solicitudes.paginator.num_pages }}</div>
+                    <div class="stat-label">Páginas</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <div class="stat-number">{{ solicitudes.number }}/{{ solicitudes.paginator.num_pages }}</div>
+                    <div class="stat-label">Página Actual</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filter-section">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label for="buscar" class="form-label">Buscar</label>
+                <div class="search-box">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" class="form-control" id="buscar" name="buscar" 
+                           value="{{ filtros_aplicados.buscar }}" placeholder="Título, descripción, especialidad...">
+                </div>
+            </div>
+            <div class="col-md-2">
+                <label for="estado" class="form-label">Estado</label>
+                <select class="form-select" id="estado" name="estado">
+                    <option value="">Todos los estados</option>
+                    {% for valor, etiqueta in estados %}
+                        <option value="{{ valor }}" {% if filtros_aplicados.estado == valor %}selected{% endif %}>
+                            {{ etiqueta }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="prioridad" class="form-label">Prioridad</label>
+                <select class="form-select" id="prioridad" name="prioridad">
+                    <option value="">Todas las prioridades</option>
+                    {% for valor, etiqueta in prioridades %}
+                        <option value="{{ valor }}" {% if filtros_aplicados.prioridad == valor %}selected{% endif %}>
+                            {{ etiqueta }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="especialidad" class="form-label">Especialidad</label>
+                <select class="form-select" id="especialidad" name="especialidad">
+                    <option value="">Todas las especialidades</option>
+                    {% for especialidad in especialidades %}
+                        <option value="{{ especialidad }}" {% if filtros_aplicados.especialidad == especialidad %}selected{% endif %}>
+                            {{ especialidad }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="orden" class="form-label">Ordenar por</label>
+                <select class="form-select" id="orden" name="orden">
+                    <option value="-fecha_creacion" {% if filtros_aplicados.orden == '-fecha_creacion' %}selected{% endif %}>
+                        Fecha (más reciente)
+                    </option>
+                    <option value="fecha_creacion" {% if filtros_aplicados.orden == 'fecha_creacion' %}selected{% endif %}>
+                        Fecha (más antigua)
+                    </option>
+                    <option value="titulo" {% if filtros_aplicados.orden == 'titulo' %}selected{% endif %}>
+                        Título (A-Z)
+                    </option>
+                    <option value="-titulo" {% if filtros_aplicados.orden == '-titulo' %}selected{% endif %}>
+                        Título (Z-A)
+                    </option>
+                    <option value="prioridad" {% if filtros_aplicados.orden == 'prioridad' %}selected{% endif %}>
+                        Prioridad
+                    </option>
+                </select>
+            </div>
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary me-2">
+                    <i class="fas fa-filter me-2"></i>Filtrar
+                </button>
+                <a href="{% url 'lista_solicitudes' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times me-2"></i>Limpiar filtros
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Lista de solicitudes -->
+    {% if solicitudes %}
+        <div class="row">
+            {% for solicitud in solicitudes %}
+                <div class="col-12">
+                    <div class="card solicitud-card position-relative">
+                        <div class="priority-indicator priority-{{ solicitud.prioridad }}"></div>
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <h5 class="card-title mb-0 me-3">{{ solicitud.titulo }}</h5>
+                                        <span class="badge bg-{{ solicitud.estado|default:'secondary' }} status-badge">
+                                            {{ solicitud.get_estado_display }}
+                                        </span>
+                                        <span class="badge bg-{{ solicitud.prioridad|default:'secondary' }} status-badge ms-2">
+                                            {{ solicitud.get_prioridad_display }}
+                                        </span>
+                                    </div>
+                                    
+                                    <p class="card-text text-muted mb-2">
+                                        {{ solicitud.descripcion_caso|truncatewords:20 }}
+                                    </p>
+                                    
+                                    <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                                        <span class="tag">
+                                            <i class="fas fa-user-md me-1"></i>{{ solicitud.especialidad_requerida }}
+                                        </span>
+                                        {% if user.rol != 'paciente' %}
+                                            <span class="tag">
+                                                <i class="fas fa-user me-1"></i>{{ solicitud.paciente.get_full_name|default:solicitud.paciente.username }}
+                                            </span>
+                                        {% endif %}
+                                        {% if solicitud.medico_asignado %}
+                                            <span class="tag">
+                                                <i class="fas fa-stethoscope me-1"></i>Dr. {{ solicitud.medico_asignado.get_full_name|default:solicitud.medico_asignado.username }}
+                                            </span>
+                                        {% endif %}
+                                        {% if solicitud.documentos.count > 0 %}
+                                            <span class="tag">
+                                                <i class="fas fa-paperclip me-1"></i>{{ solicitud.documentos.count }} documento{{ solicitud.documentos.count|pluralize }}
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar me-1"></i>Creada: {{ solicitud.fecha_creacion|date:"d/m/Y H:i" }}
+                                        {% if solicitud.fecha_asignacion %}
+                                            | <i class="fas fa-user-check me-1"></i>Asignada: {{ solicitud.fecha_asignacion|date:"d/m/Y H:i" }}
+                                        {% endif %}
+                                        {% if solicitud.fecha_completada %}
+                                            | <i class="fas fa-check me-1"></i>Completada: {{ solicitud.fecha_completada|date:"d/m/Y H:i" }}
+                                        {% endif %}
+                                    </small>
+                                </div>
+                                
+                                <div class="col-md-4 text-end">
+                                    <div class="d-flex flex-column gap-2">
+                                        <a href="{% url 'detalle_solicitud' solicitud.id %}" class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-eye me-1"></i>Ver Detalles
+                                        </a>
+                                        
+                                        {% if user.rol == 'medico' and solicitud.estado == 'asignada' and not solicitud.opinion_medica %}
+                                            <a href="{% url 'emitir_opinion' solicitud.id %}" class="btn btn-success btn-sm">
+                                                <i class="fas fa-comments me-1"></i>Emitir Opinión
+                                            </a>
+                                        {% endif %}
+                                        
+                                        {% if user.rol == 'paciente' and solicitud.estado == 'completada' and solicitud.opinion_medica and not solicitud.opinion_medica.calificacion %}
+                                            <a href="{% url 'calificar_opinion' solicitud.opinion_medica.id %}" class="btn btn-warning btn-sm">
+                                                <i class="fas fa-star me-1"></i>Calificar
+                                            </a>
+                                        {% endif %}
+                                        
+                                        {% if user.rol == 'admin' and solicitud.estado == 'pendiente' %}
+                                            <button class="btn btn-info btn-sm" onclick="asignarMedico({{ solicitud.id }})">
+                                                <i class="fas fa-user-md me-1"></i>Asignar Médico
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Paginación -->
+        {% if solicitudes.has_other_pages %}
+            <nav aria-label="Paginación de solicitudes" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if solicitudes.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if request.GET.buscar %}&buscar={{ request.GET.buscar }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}{% if request.GET.prioridad %}&prioridad={{ request.GET.prioridad }}{% endif %}{% if request.GET.especialidad %}&especialidad={{ request.GET.especialidad }}{% endif %}{% if request.GET.orden %}&orden={{ request.GET.orden }}{% endif %}" aria-label="Primera página">
+                                <span aria-hidden="true">&laquo;&laquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ solicitudes.previous_page_number }}{% if request.GET.buscar %}&buscar={{ request.GET.buscar }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}{% if request.GET.prioridad %}&prioridad={{ request.GET.prioridad }}{% endif %}{% if request.GET.especialidad %}&especialidad={{ request.GET.especialidad }}{% endif %}{% if request.GET.orden %}&orden={{ request.GET.orden }}{% endif %}" aria-label="Página anterior">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for num in solicitudes.paginator.page_range %}
+                        {% if solicitudes.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > solicitudes.number|add:'-3' and num < solicitudes.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{% if request.GET.buscar %}&buscar={{ request.GET.buscar }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}{% if request.GET.prioridad %}&prioridad={{ request.GET.prioridad }}{% endif %}{% if request.GET.especialidad %}&especialidad={{ request.GET.especialidad }}{% endif %}{% if request.GET.orden %}&orden={{ request.GET.orden }}{% endif %}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if solicitudes.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ solicitudes.next_page_number }}{% if request.GET.buscar %}&buscar={{ request.GET.buscar }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}{% if request.GET.prioridad %}&prioridad={{ request.GET.prioridad }}{% endif %}{% if request.GET.especialidad %}&especialidad={{ request.GET.especialidad }}{% endif %}{% if request.GET.orden %}&orden={{ request.GET.orden }}{% endif %}" aria-label="Página siguiente">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ solicitudes.paginator.num_pages }}{% if request.GET.buscar %}&buscar={{ request.GET.buscar }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}{% if request.GET.prioridad %}&prioridad={{ request.GET.prioridad }}{% endif %}{% if request.GET.especialidad %}&especialidad={{ request.GET.especialidad }}{% endif %}{% if request.GET.orden %}&orden={{ request.GET.orden }}{% endif %}" aria-label="Última página">
+                                <span aria-hidden="true">&raquo;&raquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <!-- Estado vacío -->
+        <div class="empty-state">
+            <i class="fas fa-search"></i>
+            <h3>No se encontraron solicitudes</h3>
+            <p>No hay solicitudes que coincidan con los filtros aplicados.</p>
+            {% if user.rol == 'paciente' %}
+                <a href="{% url 'crear_solicitud' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Crear Primera Solicitud
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+
+<!-- Modal para asignar médico -->
+<div class="modal fade" id="asignarMedicoModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Asignar Médico</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="medico-select" class="form-label">Seleccionar Médico</label>
+                    <select class="form-select" id="medico-select">
+                        <option value="">Cargando médicos...</option>
+                    </select>
+                </div>
+                <div id="medico-info" class="alert alert-info" style="display: none;"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="confirmar-asignacion">Asignar Médico</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentSolicitudId = null;
+    
+    // Función para asignar médico
+    function asignarMedico(solicitudId) {
+        currentSolicitudId = solicitudId;
+        
+        // Cargar médicos disponibles
+        fetch('/ajax/obtener-medicos/')
+            .then(response => response.json())
+            .then(data => {
+                const select = document.getElementById('medico-select');
+                select.innerHTML = '<option value="">Seleccionar médico...</option>';
+                
+                data.medicos.forEach(medico => {
+                    const option = document.createElement('option');
+                    option.value = medico.id;
+                    option.textContent = `${medico.nombre} - ${medico.especialidad}`;
+                    option.dataset.medico = JSON.stringify(medico);
+                    select.appendChild(option);
+                });
+                
+                // Mostrar modal
+                const modal = new bootstrap.Modal(document.getElementById('asignarMedicoModal'));
+                modal.show();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('Error al cargar los médicos', 'error');
+            });
+    }
+    
+    // Mostrar información del médico seleccionado
+    document.getElementById('medico-select').addEventListener('change', function() {
+        const selected = this.options[this.selectedIndex];
+        const infoDiv = document.getElementById('medico-info');
+        
+        if (selected.value && selected.dataset.medico) {
+            const medico = JSON.parse(selected.dataset.medico);
+            infoDiv.innerHTML = `
+                <strong>${medico.nombre}</strong><br>
+                Especialidad: ${medico.especialidad}<br>
+                Experiencia: ${medico.experiencia} años<br>
+                ${medico.hospital ? `Hospital: ${medico.hospital}` : ''}
+            `;
+            infoDiv.style.display = 'block';
+        } else {
+            infoDiv.style.display = 'none';
+        }
+    });
+    
+    // Confirmar asignación
+    document.getElementById('confirmar-asignacion').addEventListener('click', function() {
+        const medicoId = document.getElementById('medico-select').value;
+        
+        if (!medicoId) {
+            showToast('Por favor selecciona un médico', 'warning');
+            return;
+        }
+        
+        const data = {
+            solicitud_id: currentSolicitudId,
+            medico_id: medicoId
+        };
+        
+        fetch('/ajax/asignar-medico/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast('Médico asignado exitosamente', 'success');
+                // Cerrar modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('asignarMedicoModal'));
+                modal.hide();
+                // Recargar página
+                location.reload();
+            } else {
+                showToast(data.message || 'Error al asignar médico', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Error al asignar médico', 'error');
+        });
+    });
+    
+    // Filtros dinámicos
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form');
+        const inputs = form.querySelectorAll('input, select');
+        
+        // Auto-submit en cambio de filtros (excepto búsqueda)
+        inputs.forEach(input => {
+            if (input.name !== 'buscar') {
+                input.addEventListener('change', function() {
+                    form.submit();
+                });
+            }
+        });
+        
+        // Buscar con debounce
+        const searchInput = document.getElementById('buscar');
+        let searchTimeout;
+        
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                if (this.value.length >= 2 || this.value.length === 0) {
+                    form.submit();
+                }
+            }, 500);
+        });
+    });
+</script>
+{% endblock %}

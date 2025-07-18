@@ -7,6 +7,22 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth import authenticate, login, logout
 from .models import Usuario, PerfilMedico
 from .serializers import UsuarioSerializer, PerfilMedicoSerializer
+from .forms import RegistroPacienteForm, UsuarioUpdateForm
+from django.contrib.auth.forms import UserCreationForm
+
+
+class RegistroPacienteView(viewsets.ViewSet):
+    """Vista para el registro de pacientes por médicos"""
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request):
+        form = RegistroPacienteForm(request.data or None)
+        if request.method == 'POST':
+            if form.is_valid():
+                form.save()
+                return Response({'message': 'Paciente registrado y credenciales enviadas con éxito.'})
+            return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
+        return render(request, 'frontend/crear_paciente.html', {'form': form})
 
 
 class UsuarioViewSet(viewsets.ModelViewSet):

@@ -7,7 +7,18 @@ import os
 
 def upload_to_documents(instance, filename):
     """Función para definir la ruta de subida de documentos"""
-    return f'documentos/{instance.solicitud.id}/{filename}'
+    import os
+    from datetime import datetime
+    
+    # Obtener la extensión del archivo
+    name, ext = os.path.splitext(filename)
+    
+    # Crear un nombre único con timestamp
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    new_filename = f"{name}_{timestamp}{ext}"
+    
+    # Crear estructura de carpetas: storage/solicitud_ID/
+    return f'storage/{instance.solicitud.id}/{new_filename}'
 
 
 class TipoDocumento(models.Model):

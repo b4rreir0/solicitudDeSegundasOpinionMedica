@@ -1,0 +1,574 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Detalles de Solicitud - {{ solicitud.titulo }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .detail-section {
+        background: white;
+        border-radius: 10px;
+        padding: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+    }
+    .section-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #e9ecef;
+    }
+    .section-header h3 {
+        margin: 0;
+        color: #495057;
+    }
+    .section-header .section-icon {
+        font-size: 1.5rem;
+        margin-right: 1rem;
+        color: #007bff;
+    }
+    .status-timeline {
+        position: relative;
+        padding-left: 2rem;
+    }
+    .status-timeline::before {
+        content: '';
+        position: absolute;
+        left: 0.5rem;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #dee2e6;
+    }
+    .timeline-item {
+        position: relative;
+        padding: 1rem 0;
+        margin-bottom: 1rem;
+    }
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -0.5rem;
+        top: 1.5rem;
+        width: 1rem;
+        height: 1rem;
+        border-radius: 50%;
+        background: #dee2e6;
+        border: 2px solid white;
+        z-index: 1;
+    }
+    .timeline-item.active::before {
+        background: #007bff;
+    }
+    .timeline-item.completed::before {
+        background: #28a745;
+    }
+    .priority-badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: bold;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+    }
+    .priority-baja {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    .priority-media {
+        background: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeaa7;
+    }
+    .priority-alta {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+    .priority-urgente {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+        animation: pulse-border 2s infinite;
+    }
+    @keyframes pulse-border {
+        0% { border-color: #f5c6cb; }
+        50% { border-color: #dc3545; }
+        100% { border-color: #f5c6cb; }
+    }
+    .document-item {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        transition: background 0.3s ease;
+    }
+    .document-item:hover {
+        background: #e9ecef;
+    }
+    .document-icon {
+        font-size: 2rem;
+        margin-right: 1rem;
+        color: #6c757d;
+    }
+    .document-info {
+        flex: 1;
+    }
+    .document-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+    .opinion-section {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-left: 4px solid #007bff;
+    }
+    .rating-display {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .rating-stars {
+        color: #ffc107;
+        font-size: 1.2rem;
+    }
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    .info-item {
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 8px;
+        border-left: 4px solid #007bff;
+    }
+    .info-label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+    .info-value {
+        color: #6c757d;
+        margin: 0;
+    }
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    .floating-actions {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        z-index: 1000;
+    }
+    .floating-actions .btn {
+        border-radius: 50px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        margin-bottom: 1rem;
+        display: block;
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="display-6 fw-bold mb-2">{{ solicitud.titulo }}</h1>
+            <p class="text-muted mb-3">Solicitud #{{ solicitud.id }} - {{ solicitud.get_estado_display }}</p>
+            <div class="d-flex align-items-center gap-3">
+                <span class="priority-badge priority-{{ solicitud.prioridad }}">
+                    {{ solicitud.get_prioridad_display }}
+                </span>
+                <span class="badge bg-{{ solicitud.estado|default:'secondary' }} fs-6">
+                    {{ solicitud.get_estado_display }}
+                </span>
+                <span class="badge bg-info fs-6">
+                    {{ solicitud.especialidad_requerida }}
+                </span>
+            </div>
+        </div>
+        <div class="col-md-4 text-end">
+            <div class="action-buttons">
+                <a href="{% url 'lista_solicitudes' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Volver
+                </a>
+                {% if user.rol == 'medico' and solicitud.estado == 'asignada' and not solicitud.opinion_medica %}
+                    <a href="{% url 'emitir_opinion' solicitud.id %}" class="btn btn-success">
+                        <i class="fas fa-comments me-2"></i>Emitir Opinión
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Información General -->
+            <div class="detail-section">
+                <div class="section-header">
+                    <i class="fas fa-info-circle section-icon"></i>
+                    <h3>Información General</h3>
+                </div>
+                
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Paciente</span>
+                        <p class="info-value">{{ solicitud.paciente.get_full_name|default:solicitud.paciente.username }}</p>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Especialidad Requerida</span>
+                        <p class="info-value">{{ solicitud.especialidad_requerida }}</p>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Fecha de Creación</span>
+                        <p class="info-value">{{ solicitud.fecha_creacion|date:"d/m/Y H:i" }}</p>
+                    </div>
+                    {% if solicitud.medico_asignado %}
+                    <div class="info-item">
+                        <span class="info-label">Médico Asignado</span>
+                        <p class="info-value">Dr. {{ solicitud.medico_asignado.get_full_name|default:solicitud.medico_asignado.username }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Descripción del Caso -->
+            <div class="detail-section">
+                <div class="section-header">
+                    <i class="fas fa-file-medical section-icon"></i>
+                    <h3>Descripción del Caso</h3>
+                </div>
+                
+                <div class="mb-3">
+                    <h5>Descripción Detallada</h5>
+                    <p class="text-muted">{{ solicitud.descripcion_caso|linebreaks }}</p>
+                </div>
+                
+                {% if solicitud.diagnostico_inicial %}
+                <div class="mb-3">
+                    <h5>Diagnóstico Inicial</h5>
+                    <p class="text-muted">{{ solicitud.diagnostico_inicial|linebreaks }}</p>
+                </div>
+                {% endif %}
+                
+                {% if solicitud.tratamiento_actual %}
+                <div class="mb-3">
+                    <h5>Tratamiento Actual</h5>
+                    <p class="text-muted">{{ solicitud.tratamiento_actual|linebreaks }}</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Documentos -->
+            <div class="detail-section">
+                <div class="section-header">
+                    <i class="fas fa-paperclip section-icon"></i>
+                    <h3>Documentos Médicos ({{ documentos.count }})</h3>
+                </div>
+                
+                {% if documentos %}
+                    {% for documento in documentos %}
+                    <div class="document-item">
+                        <div class="document-icon">
+                            {% if documento.extension == '.pdf' %}
+                                <i class="fas fa-file-pdf text-danger"></i>
+                            {% elif documento.extension == '.doc' or documento.extension == '.docx' %}
+                                <i class="fas fa-file-word text-primary"></i>
+                            {% elif documento.extension == '.jpg' or documento.extension == '.jpeg' or documento.extension == '.png' %}
+                                <i class="fas fa-file-image text-success"></i>
+                            {% else %}
+                                <i class="fas fa-file text-secondary"></i>
+                            {% endif %}
+                        </div>
+                        <div class="document-info">
+                            <h6 class="mb-1">{{ documento.nombre }}</h6>
+                            <small class="text-muted">{{ documento.tamaño_legible }} - Subido el {{ documento.fecha_subida|date:"d/m/Y H:i" }}</small>
+                            {% if documento.descripcion %}
+                                <p class="text-muted mb-0 mt-1">{{ documento.descripcion }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="document-actions">
+                            <a href="{{ documento.archivo.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{{ documento.archivo.url }}" download class="btn btn-sm btn-outline-success">
+                                <i class="fas fa-download"></i>
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-folder-open text-muted" style="font-size: 3rem;"></i>
+                        <p class="text-muted mt-2">No hay documentos adjuntos</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Opinión Médica -->
+            {% if opinion %}
+            <div class="detail-section opinion-section">
+                <div class="section-header">
+                    <i class="fas fa-comments section-icon"></i>
+                    <h3>Opinión Médica</h3>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5>Diagnóstico Propuesto</h5>
+                        <small class="text-muted">{{ opinion.fecha_creacion|date:"d/m/Y H:i" }}</small>
+                    </div>
+                    <p class="text-muted">{{ opinion.diagnostico_propuesto|linebreaks }}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <h5>Recomendaciones</h5>
+                    <p class="text-muted">{{ opinion.recomendaciones|linebreaks }}</p>
+                </div>
+                
+                {% if opinion.tratamiento_sugerido %}
+                <div class="mb-3">
+                    <h5>Tratamiento Sugerido</h5>
+                    <p class="text-muted">{{ opinion.tratamiento_sugerido|linebreaks }}</p>
+                </div>
+                {% endif %}
+                
+                {% if opinion.comentarios_adicionales %}
+                <div class="mb-3">
+                    <h5>Comentarios Adicionales</h5>
+                    <p class="text-muted">{{ opinion.comentarios_adicionales|linebreaks }}</p>
+                </div>
+                {% endif %}
+                
+                {% if opinion.requiere_seguimiento %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Seguimiento Requerido:</strong> Este caso requiere seguimiento médico.
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Calificación -->
+            {% if calificacion %}
+            <div class="detail-section">
+                <div class="section-header">
+                    <i class="fas fa-star section-icon"></i>
+                    <h3>Calificación del Paciente</h3>
+                </div>
+                
+                <div class="rating-display mb-3">
+                    <div class="rating-stars">
+                        {% for i in "12345"|make_list %}
+                            {% if forloop.counter <= calificacion.puntuacion %}
+                                <i class="fas fa-star"></i>
+                            {% else %}
+                                <i class="far fa-star"></i>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <span class="fw-bold">{{ calificacion.puntuacion }}/5</span>
+                    <small class="text-muted">{{ calificacion.fecha_creacion|date:"d/m/Y" }}</small>
+                </div>
+                
+                {% if calificacion.comentario %}
+                <div class="mb-3">
+                    <h6>Comentario</h6>
+                    <p class="text-muted">{{ calificacion.comentario|linebreaks }}</p>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Seguimientos -->
+            {% if seguimientos %}
+            <div class="detail-section">
+                <div class="section-header">
+                    <i class="fas fa-history section-icon"></i>
+                    <h3>Seguimientos ({{ seguimientos.count }})</h3>
+                </div>
+                
+                {% for seguimiento in seguimientos %}
+                <div class="border-bottom pb-3 mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="mb-0">Seguimiento #{{ forloop.counter }}</h6>
+                        <small class="text-muted">{{ seguimiento.fecha_creacion|date:"d/m/Y H:i" }}</small>
+                    </div>
+                    <p class="text-muted mb-0">{{ seguimiento.observaciones|linebreaks }}</p>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Estado del Proceso -->
+            <div class="detail-section">
+                <div class="section-header">
+                    <i class="fas fa-tasks section-icon"></i>
+                    <h3>Estado del Proceso</h3>
+                </div>
+                
+                <div class="status-timeline">
+                    <div class="timeline-item completed">
+                        <h6>Solicitud Creada</h6>
+                        <small class="text-muted">{{ solicitud.fecha_creacion|date:"d/m/Y H:i" }}</small>
+                    </div>
+                    
+                    <div class="timeline-item {% if solicitud.estado == 'asignada' or solicitud.estado == 'en_revision' or solicitud.estado == 'completada' %}completed{% elif solicitud.estado == 'pendiente' %}active{% endif %}">
+                        <h6>{% if solicitud.medico_asignado %}Médico Asignado{% else %}Pendiente de Asignación{% endif %}</h6>
+                        {% if solicitud.fecha_asignacion %}
+                            <small class="text-muted">{{ solicitud.fecha_asignacion|date:"d/m/Y H:i" }}</small>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="timeline-item {% if solicitud.estado == 'en_revision' %}active{% elif solicitud.estado == 'completada' %}completed{% endif %}">
+                        <h6>En Revisión</h6>
+                        {% if solicitud.estado == 'en_revision' %}
+                            <small class="text-muted">En proceso...</small>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="timeline-item {% if solicitud.estado == 'completada' %}completed{% endif %}">
+                        <h6>Opinión Completada</h6>
+                        {% if solicitud.fecha_completada %}
+                            <small class="text-muted">{{ solicitud.fecha_completada|date:"d/m/Y H:i" }}</small>
+                        {% endif %}
+                    </div>
+                    
+                    {% if calificacion %}
+                    <div class="timeline-item completed">
+                        <h6>Calificación Recibida</h6>
+                        <small class="text-muted">{{ calificacion.fecha_creacion|date:"d/m/Y H:i" }}</small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Información Adicional -->
+            <div class="detail-section">
+                <div class="section-header">
+                    <i class="fas fa-info section-icon"></i>
+                    <h3>Información Adicional</h3>
+                </div>
+                
+                <div class="info-item mb-3">
+                    <span class="info-label">ID de Solicitud</span>
+                    <p class="info-value">#{{ solicitud.id }}</p>
+                </div>
+                
+                <div class="info-item mb-3">
+                    <span class="info-label">Prioridad</span>
+                    <p class="info-value">{{ solicitud.get_prioridad_display }}</p>
+                </div>
+                
+                <div class="info-item mb-3">
+                    <span class="info-label">Documentos Adjuntos</span>
+                    <p class="info-value">{{ documentos.count }} archivo{{ documentos.count|pluralize }}</p>
+                </div>
+                
+                <div class="info-item mb-3">
+                    <span class="info-label">Última Actualización</span>
+                    <p class="info-value">{{ solicitud.fecha_actualizacion|date:"d/m/Y H:i" }}</p>
+                </div>
+            </div>
+
+            <!-- Acciones Disponibles -->
+            <div class="detail-section">
+                <div class="section-header">
+                    <i class="fas fa-cogs section-icon"></i>
+                    <h3>Acciones Disponibles</h3>
+                </div>
+                
+                <div class="d-grid gap-2">
+                    {% if user.rol == 'paciente' and solicitud.estado == 'completada' and opinion and not calificacion %}
+                        <a href="{% url 'calificar_opinion' opinion.id %}" class="btn btn-warning">
+                            <i class="fas fa-star me-2"></i>Calificar Opinión
+                        </a>
+                    {% endif %}
+                    
+                    {% if user.rol == 'medico' and solicitud.estado == 'asignada' and not opinion %}
+                        <a href="{% url 'emitir_opinion' solicitud.id %}" class="btn btn-success">
+                            <i class="fas fa-comments me-2"></i>Emitir Opinión
+                        </a>
+                    {% endif %}
+                    
+                    {% if user.rol == 'admin' and solicitud.estado == 'pendiente' %}
+                        <button class="btn btn-info" onclick="asignarMedico({{ solicitud.id }})">
+                            <i class="fas fa-user-md me-2"></i>Asignar Médico
+                        </button>
+                    {% endif %}
+                    
+                    <a href="{% url 'lista_solicitudes' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Volver a la Lista
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Botones flotantes para móviles -->
+<div class="floating-actions d-lg-none">
+    {% if user.rol == 'paciente' and solicitud.estado == 'completada' and opinion and not calificacion %}
+        <a href="{% url 'calificar_opinion' opinion.id %}" class="btn btn-warning">
+            <i class="fas fa-star"></i>
+        </a>
+    {% endif %}
+    
+    {% if user.rol == 'medico' and solicitud.estado == 'asignada' and not opinion %}
+        <a href="{% url 'emitir_opinion' solicitud.id %}" class="btn btn-success">
+            <i class="fas fa-comments"></i>
+        </a>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Función para asignar médico (para admins)
+    function asignarMedico(solicitudId) {
+        // Aquí puedes reutilizar el código del modal del template de lista
+        // o implementar una versión simplificada
+        alert('Funcionalidad de asignación de médico');
+    }
+    
+    // Smooth scroll para navegación interna
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+    
+    // Confirmación antes de acciones importantes
+    document.querySelectorAll('.btn-warning, .btn-danger').forEach(button => {
+        button.addEventListener('click', function(e) {
+            const action = this.textContent.trim();
+            if (!confirm(`¿Está seguro de que desea ${action.toLowerCase()}?`)) {
+                e.preventDefault();
+            }
+        });
+    });
+</script>
+{% endblock %}

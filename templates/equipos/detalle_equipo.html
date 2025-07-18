@@ -1,0 +1,527 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}{{ equipo.nombre }} - Detalle del Equipo{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+    .team-header {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        color: white;
+        padding: 40px 0;
+        border-radius: 15px;
+        margin-bottom: 30px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .team-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 200%;
+        background: rgba(255, 255, 255, 0.1);
+        transform: rotate(45deg);
+    }
+    
+    .specialty-badge {
+        display: inline-block;
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 25px;
+        font-size: 0.9em;
+        margin-top: 15px;
+    }
+    
+    .info-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 25px;
+        margin-bottom: 25px;
+        transition: all 0.3s ease;
+    }
+    
+    .info-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        text-align: center;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+    
+    .stat-number {
+        font-size: 3em;
+        font-weight: bold;
+        margin-bottom: 10px;
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .stat-label {
+        font-size: 1.1em;
+        color: #6c757d;
+        font-weight: 500;
+    }
+    
+    .member-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .member-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    }
+    
+    .member-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 1.3em;
+        margin-right: 15px;
+    }
+    
+    .role-badge {
+        display: inline-block;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.8em;
+        font-weight: 500;
+        margin-left: 10px;
+    }
+    
+    .role-coordinador {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        color: white;
+    }
+    
+    .role-oncologo {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        color: white;
+    }
+    
+    .role-other {
+        background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+        color: white;
+    }
+    
+    .request-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 15px;
+        border-left: 4px solid #007bff;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .request-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    }
+    
+    .status-badge {
+        display: inline-block;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.8em;
+        font-weight: 500;
+    }
+    
+    .status-asignada {
+        background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+        color: white;
+    }
+    
+    .status-en_revision {
+        background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+        color: white;
+    }
+    
+    .priority-badge {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 15px;
+        font-size: 0.7em;
+        font-weight: 500;
+        margin-left: 10px;
+    }
+    
+    .priority-alta {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        color: white;
+    }
+    
+    .priority-media {
+        background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+        color: white;
+    }
+    
+    .priority-baja {
+        background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+        color: white;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 20px;
+    }
+    
+    .btn-action {
+        border-radius: 25px;
+        padding: 10px 25px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .btn-action:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .section-title {
+        font-size: 1.5em;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .section-title i {
+        color: #007bff;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #6c757d;
+        background: #f8f9fa;
+        border-radius: 15px;
+    }
+    
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Team Header -->
+    <div class="team-header">
+        <div class="container">
+            <h1>
+                <i class="{{ equipo.especialidad.icono }}"></i>
+                {{ equipo.nombre }}
+            </h1>
+            <p class="lead">{{ equipo.descripcion }}</p>
+            <div class="specialty-badge">
+                <i class="fas fa-stethoscope"></i>
+                {{ equipo.especialidad.nombre }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number">{{ estadisticas.total_solicitudes }}</div>
+            <div class="stat-label">Total Solicitudes</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ estadisticas.solicitudes_pendientes }}</div>
+            <div class="stat-label">Casos Activos</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ estadisticas.solicitudes_completadas }}</div>
+            <div class="stat-label">Casos Completados</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ equipo.total_miembros }}</div>
+            <div class="stat-label">Miembros</div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+        {% if es_miembro or user.rol == 'admin' %}
+            <a href="{% url 'equipos:chat_equipo' equipo.id %}" class="btn btn-success btn-action">
+                <i class="fas fa-comments"></i> Chat del Equipo
+            </a>
+        {% endif %}
+        
+        {% if user.rol == 'admin' or user == equipo.coordinador %}
+            <a href="#" class="btn btn-primary btn-action" data-bs-toggle="modal" data-bs-target="#agregarMiembroModal">
+                <i class="fas fa-user-plus"></i> Agregar Miembro
+            </a>
+        {% endif %}
+        
+        <a href="{% url 'equipos:lista_equipos' %}" class="btn btn-outline-secondary btn-action">
+            <i class="fas fa-arrow-left"></i> Volver a Equipos
+        </a>
+    </div>
+
+    <div class="row">
+        <!-- Team Members -->
+        <div class="col-lg-6">
+            <div class="info-card">
+                <div class="section-title">
+                    <i class="fas fa-users"></i>
+                    Miembros del Equipo
+                </div>
+                
+                {% if miembros %}
+                    {% for miembro in miembros %}
+                    <div class="member-card d-flex align-items-center">
+                        <div class="member-avatar">
+                            {{ miembro.usuario.first_name|first }}{{ miembro.usuario.last_name|first }}
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">{{ miembro.usuario.nombre_completo }}</h6>
+                            <p class="text-muted mb-0">{{ miembro.usuario.email }}</p>
+                            <small class="text-muted">
+                                <i class="fas fa-calendar"></i>
+                                Desde: {{ miembro.fecha_incorporacion|date:"d/m/Y" }}
+                            </small>
+                        </div>
+                        <div>
+                            <span class="role-badge role-{{ miembro.rol_en_equipo }}">
+                                {{ miembro.get_rol_en_equipo_display }}
+                            </span>
+                            {% if miembro.usuario == equipo.coordinador %}
+                                <i class="fas fa-crown text-warning ml-2" title="Coordinador"></i>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-user-friends"></i>
+                        <h5>No hay miembros asignados</h5>
+                        <p>Este equipo aún no tiene miembros asignados.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Active Requests -->
+        <div class="col-lg-6">
+            <div class="info-card">
+                <div class="section-title">
+                    <i class="fas fa-clipboard-list"></i>
+                    Solicitudes Activas
+                </div>
+                
+                {% if solicitudes %}
+                    {% for solicitud in solicitudes %}
+                    <div class="request-card">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 class="mb-0">{{ solicitud.titulo|truncatewords:8 }}</h6>
+                            <span class="status-badge status-{{ solicitud.estado }}">
+                                {{ solicitud.get_estado_display }}
+                            </span>
+                        </div>
+                        
+                        <p class="text-muted mb-2">
+                            <i class="fas fa-user"></i>
+                            {{ solicitud.paciente.nombre_completo }}
+                        </p>
+                        
+                        {% if solicitud.tipo_cancer %}
+                        <p class="text-muted mb-2">
+                            <i class="fas fa-disease"></i>
+                            {{ solicitud.tipo_cancer|title }}
+                        </p>
+                        {% endif %}
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <i class="fas fa-clock"></i>
+                                {{ solicitud.fecha_creacion|date:"d/m/Y" }}
+                            </small>
+                            
+                            {% if solicitud.prioridad %}
+                            <span class="priority-badge priority-{{ solicitud.prioridad }}">
+                                {{ solicitud.get_prioridad_display }}
+                            </span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mt-2">
+                            <a href="{% url 'detalle_solicitud' solicitud.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye"></i> Ver Detalles
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    {% if equipo.solicitudes_asignadas.count > 10 %}
+                    <div class="text-center mt-3">
+                        <a href="#" class="btn btn-outline-primary">
+                            <i class="fas fa-plus"></i> Ver todas las solicitudes
+                        </a>
+                    </div>
+                    {% endif %}
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-clipboard-check"></i>
+                        <h5>No hay solicitudes activas</h5>
+                        <p>Este equipo no tiene solicitudes pendientes en este momento.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Coordinator Info -->
+    {% if equipo.coordinador %}
+    <div class="info-card">
+        <div class="section-title">
+            <i class="fas fa-user-tie"></i>
+            Coordinador del Equipo
+        </div>
+        
+        <div class="row">
+            <div class="col-md-8">
+                <div class="d-flex align-items-center">
+                    <div class="member-avatar" style="width: 80px; height: 80px; font-size: 1.5em;">
+                        {{ equipo.coordinador.first_name|first }}{{ equipo.coordinador.last_name|first }}
+                    </div>
+                    <div class="ml-3">
+                        <h5>{{ equipo.coordinador.nombre_completo }}</h5>
+                        <p class="text-muted mb-1">{{ equipo.coordinador.email }}</p>
+                        {% if equipo.coordinador.perfil_medico %}
+                        <p class="text-muted mb-1">
+                            <i class="fas fa-stethoscope"></i>
+                            {{ equipo.coordinador.perfil_medico.especialidad }}
+                        </p>
+                        <p class="text-muted mb-0">
+                            <i class="fas fa-hospital"></i>
+                            {{ equipo.coordinador.perfil_medico.hospital_clinica }}
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4 text-end">
+                <div class="text-muted">
+                    <p class="mb-1">
+                        <i class="fas fa-calendar"></i>
+                        Equipo creado: {{ equipo.fecha_creacion|date:"d/m/Y" }}
+                    </p>
+                    <p class="mb-0">
+                        <i class="fas fa-clock"></i>
+                        Última actualización: {{ equipo.fecha_actualizacion|date:"d/m/Y" }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Modal for adding team member -->
+{% if user.rol == 'admin' or user == equipo.coordinador %}
+<div class="modal fade" id="agregarMiembroModal" tabindex="-1" aria-labelledby="agregarMiembroModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="agregarMiembroModalLabel">Agregar Miembro al Equipo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="#">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="usuario" class="form-label">Médico</label>
+                        <select class="form-select" id="usuario" name="usuario" required>
+                            <option value="">Selecciona un médico...</option>
+                            <!-- This would be populated with available doctors -->
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="rol_en_equipo" class="form-label">Rol en el Equipo</label>
+                        <select class="form-select" id="rol_en_equipo" name="rol_en_equipo" required>
+                            <option value="oncologo">Oncólogo</option>
+                            <option value="radiologo">Radiólogo</option>
+                            <option value="patologo">Patólogo</option>
+                            <option value="cirujano">Cirujano</option>
+                            <option value="radioterapeuta">Radioterapeuta</option>
+                            <option value="enfermero">Enfermero Oncológico</option>
+                            <option value="psicologo">Psicólogo</option>
+                            <option value="nutricionista">Nutricionista</option>
+                            <option value="farmaceutico">Farmacéutico</option>
+                            <option value="otro">Otro</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Agregar Miembro</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-refresh page every 30 seconds for active requests
+    setInterval(function() {
+        // Only refresh if user is viewing the page
+        if (document.visibilityState === 'visible') {
+            location.reload();
+        }
+    }, 30000);
+});
+</script>
+{% endblock %}
