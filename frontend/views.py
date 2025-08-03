@@ -428,7 +428,7 @@ def login_view(request):
 
 
 def register_view(request):
-    """Vista de registro"""
+    """Vista de registro - SOLO para pacientes"""
     if request.user.is_authenticated:
         return redirect('dashboard')
     
@@ -440,7 +440,8 @@ def register_view(request):
             password_confirm = request.POST.get('password_confirm')
             first_name = request.POST.get('first_name')
             last_name = request.POST.get('last_name')
-            rol = request.POST.get('rol', 'paciente')
+            # Forzar rol de paciente - los médicos no se registran por este medio
+            rol = 'paciente'
             
             if password != password_confirm:
                 messages.error(request, 'Las contraseñas no coinciden.')
@@ -466,16 +467,7 @@ def register_view(request):
                 peso=request.POST.get('peso') or None,
             )
             
-            # Si es médico, crear perfil médico básico
-            if rol == 'medico':
-                PerfilMedico.objects.create(
-                    usuario=user,
-                    numero_colegiado=request.POST.get('numero_colegiado', ''),
-                    especialidad=request.POST.get('especialidad', ''),
-                    años_experiencia=int(request.POST.get('años_experiencia', 0)),
-                )
-            
-            messages.success(request, 'Cuenta creada exitosamente. Ya puedes iniciar sesión.')
+            messages.success(request, 'Cuenta de paciente creada exitosamente. Ya puedes iniciar sesión.')
             return redirect('login')
             
         except Exception as e:

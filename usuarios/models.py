@@ -19,6 +19,12 @@ class Usuario(AbstractUser):
         help_text='Rol del usuario en el sistema'
     )
     
+    # Asegurar que el email sea único
+    email = models.EmailField(
+        unique=True,
+        help_text='Correo electrónico único del usuario'
+    )
+    
     telefono = models.CharField(
         max_length=15,
         blank=True,
@@ -70,6 +76,16 @@ class Usuario(AbstractUser):
     class Meta:
         verbose_name = 'Usuario'
         verbose_name_plural = 'Usuarios'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['username'],
+                name='unique_username'
+            ),
+            models.UniqueConstraint(
+                fields=['email'],
+                name='unique_email'
+            )
+        ]
     
     def __str__(self):
         return f"{self.username} ({self.get_rol_display()})"
@@ -77,6 +93,45 @@ class Usuario(AbstractUser):
     @property
     def nombre_completo(self):
         return f"{self.first_name} {self.last_name}".strip()
+        
+    def clean(self):
+        """Validación personalizada del modelo"""
+        from django.core.exceptions import ValidationError
+        
+        # Validar que el username no esté vacío
+        if not self.username:
+            raise ValidationError('El nombre de usuario es obligatorio')
+        
+        # Validar que el email no esté vacío
+        if not self.email:
+            raise ValidationError('El correo electrónico es obligatorio')
+        
+        # Validar unicidad del username (case-insensitive)
+        existing_user = Usuario.objects.filter(
+            username__iexact=self.username
+        ).exclude(pk=self.pk)
+        if existing_user.exists():
+            raise ValidationError('Ya existe un usuario con este nombre de usuario')
+        
+        # Validar unicidad del email (case-insensitive)
+        existing_email = Usuario.objects.filter(
+            email__iexact=self.email
+        ).exclude(pk=self.pk)
+        if existing_email.exists():
+            raise ValidationError('Ya existe un usuario con este correo electrónico')
+    
+    def save(self, *args, **kwargs):
+        """Guardar con validación completa"""
+        # Normalizar email y username
+        if self.email:
+            self.email = self.email.lower().strip()
+        if self.username:
+            self.username = self.username.lower().strip()
+        
+        # Ejecutar validación
+        self.full_clean()
+        
+        super().save(*args, **kwargs)
 
 
 class CodigoVerificacion(models.Model):

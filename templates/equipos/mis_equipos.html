@@ -73,6 +73,16 @@
         background: rgba(0, 123, 255, 0.05);
     }
     
+    .team-info {
+        padding: 20px;
+        background: rgba(0, 123, 255, 0.05);
+    }
+    
+    .team-info p {
+        margin-bottom: 8px;
+        color: #495057;
+    }
+    
     .stat-item {
         text-align: center;
         padding: 15px;
@@ -249,25 +259,16 @@
                     </div>
                 </div>
                 
-                <div class="team-stats">
-                    <div class="stat-item">
-                        <div class="stat-number">{{ equipo.total_miembros }}</div>
-                        <div class="stat-label">Miembros</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-number">{{ equipo.solicitudes_activas }}</div>
-                        <div class="stat-label">Casos Activos</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-number">
-                            {% if equipo.solicitudes_asignadas.count > 0 %}
-                                {{ equipo.solicitudes_asignadas.filter.estado='completada'.count }}
-                            {% else %}
-                                0
-                            {% endif %}
-                        </div>
-                        <div class="stat-label">Completados</div>
-                    </div>
+                <div class="team-info">
+                    <p class="mb-2"><strong>Especialidad:</strong> {{ equipo.especialidad.nombre }}</p>
+                    <p class="mb-2"><strong>Coordinador:</strong> 
+                        {% if equipo.coordinador %}
+                            {{ equipo.coordinador.nombre_completo }}
+                        {% else %}
+                            Sin asignar
+                        {% endif %}
+                    </p>
+                    <p class="mb-0"><strong>Miembros:</strong> {{ equipo.total_miembros }}</p>
                 </div>
                 
                 <div class="team-members-preview">
@@ -332,27 +333,16 @@
                     </div>
                 </div>
                 
-                <div class="team-stats">
-                    <div class="stat-item">
-                        <div class="stat-number">{{ equipo.total_miembros }}</div>
-                        <div class="stat-label">Miembros</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-number">{{ equipo.solicitudes_activas }}</div>
-                        <div class="stat-label">Casos Activos</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-number">
-                            {% with mi_membership=equipo.memberships.filter.usuario=user.first %}
-                                {% if mi_membership %}
-                                    {{ mi_membership.rol_en_equipo|title }}
-                                {% else %}
-                                    Miembro
-                                {% endif %}
-                            {% endwith %}
-                        </div>
-                        <div class="stat-label">Mi Rol</div>
-                    </div>
+                <div class="team-info">
+                    <p class="mb-2"><strong>Mi Rol:</strong> 
+                        {% if equipo.mi_rol %}
+                            {{ equipo.mi_rol.get_rol_en_equipo_display }}
+                        {% else %}
+                            Miembro
+                        {% endif %}
+                    </p>
+                    <p class="mb-2"><strong>Especialidad:</strong> {{ equipo.especialidad.nombre }}</p>
+                    <p class="mb-0"><strong>Miembros totales:</strong> {{ equipo.total_miembros }}</p>
                 </div>
                 
                 <div class="team-members-preview">

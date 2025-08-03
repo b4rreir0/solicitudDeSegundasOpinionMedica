@@ -115,10 +115,22 @@ def mis_equipos(request):
         return redirect('dashboard')
     
     # Equipos donde el usuario es miembro
-    equipos_miembro = request.user.equipos_miembro.filter(activo=True)
+    equipos_miembro = request.user.equipos_miembro.filter(activo=True).prefetch_related(
+        'miembros', 'solicitudes_asignadas', 'especialidad'
+    )
     
     # Equipos donde el usuario es coordinador
-    equipos_coordinador = request.user.equipos_coordinados.filter(activo=True)
+    equipos_coordinador = request.user.equipos_coordinados.filter(activo=True).prefetch_related(
+        'miembros', 'solicitudes_asignadas', 'especialidad'
+    )
+    
+    # Añadir estadísticas a cada equipo
+    for equipo in equipos_miembro:
+        equipo.solicitudes_completadas = equipo.solicitudes_asignadas.filter(estado='completada').count()
+        equipo.mi_rol = equipo.memberships.filter(usuario=request.user).first()
+    
+    for equipo in equipos_coordinador:
+        equipo.solicitudes_completadas = equipo.solicitudes_asignadas.filter(estado='completada').count()
     
     context = {
         'equipos_miembro': equipos_miembro,
@@ -153,7 +165,7 @@ def chat_equipo(request, equipo_id):
     mensajes = canal.mensajes.select_related('usuario').order_by('fecha_envio')
     
     # Marcar mensajes como leídos
-    canal.mensajes.filter(leído=False).exclude(usuario=request.user).update(leído=True)
+    canal.mensajes.filter(leido=False).exclude(usuario=request.user).update(leido=True)
     
     context = {
         'equipo': equipo,

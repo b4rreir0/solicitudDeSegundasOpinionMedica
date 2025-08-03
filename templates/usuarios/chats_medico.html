@@ -1,0 +1,123 @@
+{% extends 'usuarios/panel_medico.html' %}
+
+{% block title %}Chat de Equipo - Panel Médico{% endblock %}
+
+{% block content %}
+<div class="medical-panel">
+    <!-- Mobile Toggle Button -->
+    <button class="mobile-toggle" id="sidebarToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="doctor-avatar">
+                <i class="fas fa-user-md"></i>
+            </div>
+            <h5>{{ user.nombre_completo|default:user.username }}</h5>
+            <small>Médico Especialista</small>
+        </div>
+        
+        <div class="sidebar-menu">
+            <a href="{% url 'panel_medico' %}" class="menu-item">
+                <i class="fas fa-tachometer-alt"></i>
+                Panel Principal
+            </a>
+            
+            <a href="{% url 'chats_medico' %}" class="menu-item active">
+                <i class="fas fa-comments"></i>
+                Chat de Equipo
+            </a>
+            
+            <a href="{% url 'solicitudes_asignadas_medico' %}" class="menu-item">
+                <i class="fas fa-clipboard-list"></i>
+                Solicitudes
+            </a>
+            
+            <a href="{% url 'equipos:mis_equipos' %}" class="menu-item">
+                <i class="fas fa-users"></i>
+                Mis Equipos
+            </a>
+            
+            <hr style="border-color: rgba(255,255,255,0.2); margin: 20px 0;">
+            
+            <a href="{% url 'dashboard' %}" class="menu-item">
+                <i class="fas fa-home"></i>
+                Dashboard General
+            </a>
+            
+            <a href="{% url 'perfil' %}" class="menu-item">
+                <i class="fas fa-user-cog"></i>
+                Mi Perfil
+            </a>
+            
+            <a href="{% url 'logout' %}" class="menu-item">
+                <i class="fas fa-sign-out-alt"></i>
+                Cerrar Sesión
+            </a>
+        </div>
+    </nav>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="content-header">
+            <h2><i class="fas fa-comments"></i> Chat de Equipo</h2>
+            <p class="mb-0">Comunicación con tu equipo médico</p>
+        </div>
+        
+        <!-- Chat List -->
+        <div class="recent-activity">
+            <h4><i class="fas fa-comment-dots"></i> Chats Disponibles</h4>
+            
+            {% if chats %}
+                {% for chat in chats %}
+                <div class="activity-item activity-chat">
+                    <div class="activity-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <div class="activity-content">
+                        <div class="activity-title">
+                            <a href="{% url 'equipos:chat_equipo' chat.equipo.id %}">{{ chat.nombre }}</a>
+                        </div>
+                        <div class="activity-time">
+                            Equipo: {{ chat.equipo.nombre }}
+                            {% if chat.mensajes_no_leidos > 0 %}
+                                - <strong>{{ chat.mensajes_no_leidos }} mensajes sin leer</strong>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted">No hay chats disponibles</p>
+            {% endif %}
+        </div>
+        
+        <!-- Equipment List -->
+        <div class="recent-activity" style="margin-top: 30px;">
+            <h4><i class="fas fa-users"></i> Mis Equipos</h4>
+            
+            {% if equipos %}
+                {% for equipo in equipos %}
+                <div class="activity-item">
+                    <div class="activity-icon" style="background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);">
+                        <i class="fas fa-user-friends"></i>
+                    </div>
+                    <div class="activity-content">
+                        <div class="activity-title">
+                            <a href="{% url 'equipos:chat_equipo' equipo.id %}">{{ equipo.nombre }}</a>
+                        </div>
+                        <div class="activity-time">
+                            Especialidad: {{ equipo.especialidad.nombre }}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted">No perteneces a ningún equipo</p>
+            {% endif %}
+        </div>
+    </main>
+</div>
+{% endblock %}

@@ -195,30 +195,27 @@
                         <form method="post" id="registerForm">
                             {% csrf_token %}
                             
-                            <!-- Paso 1: Tipo de usuario -->
+                            <!-- Paso 1: Bienvenida de registro de paciente -->
                             <div class="form-step active" data-step="1">
                                 <div class="text-center mb-4">
-                                    <h4>¿Cómo te vas a registrar?</h4>
-                                    <p class="text-muted">Selecciona tu rol en la plataforma</p>
+                                    <h4>Registro de Paciente</h4>
+                                    <p class="text-muted">Crea tu cuenta para solicitar segundas opiniones médicas</p>
                                 </div>
                                 
-                                <div class="role-selector">
-                                    <div class="role-option">
-                                        <input type="radio" id="rol-paciente" name="rol" value="paciente" checked>
-                                        <label for="rol-paciente">
-                                            <i class="fas fa-user role-icon"></i>
-                                            <h5>Paciente</h5>
-                                            <p class="mb-0">Busco segundas opiniones médicas</p>
-                                        </label>
-                                    </div>
-                                    <div class="role-option">
-                                        <input type="radio" id="rol-medico" name="rol" value="medico">
-                                        <label for="rol-medico">
-                                            <i class="fas fa-user-md role-icon"></i>
-                                            <h5>Médico</h5>
-                                            <p class="mb-0">Proporciono opiniones médicas profesionales</p>
-                                        </label>
-                                    </div>
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>Importante:</strong> Este formulario es exclusivo para pacientes. Los médicos son registrados por el administrador del sistema.
+                                </div>
+                                
+                                <div class="text-center">
+                                    <i class="fas fa-user-injured text-primary" style="font-size: 4rem; margin-bottom: 2rem;"></i>
+                                    <h5>Como paciente podrás:</h5>
+                                    <ul class="list-unstyled text-start mt-3">
+                                        <li><i class="fas fa-check-circle text-success me-2"></i> Crear solicitudes de segunda opinión médica</li>
+                                        <li><i class="fas fa-check-circle text-success me-2"></i> Subir documentos médicos de forma segura</li>
+                                        <li><i class="fas fa-check-circle text-success me-2"></i> Recibir opiniones de médicos especializados</li>
+                                        <li><i class="fas fa-check-circle text-success me-2"></i> Calificar y dar seguimiento a las opiniones</li>
+                                    </ul>
                                 </div>
                                 
                                 <div class="text-center">
@@ -285,47 +282,6 @@
                                     </div>
                                 </div>
                                 
-                                <!-- Campos adicionales para médicos -->
-                                <div class="medico-fields" id="medico-fields">
-                                    <h5 class="mb-3">
-                                        <i class="fas fa-stethoscope me-2"></i>
-                                        Información Profesional
-                                    </h5>
-                                    
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="form-floating">
-                                                <input type="text" class="form-control" id="numero_colegiado" name="numero_colegiado" 
-                                                       placeholder="Número de Colegiado">
-                                                <label for="numero_colegiado">Número de Colegiado</label>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="form-floating">
-                                                <input type="text" class="form-control" id="especialidad" name="especialidad" 
-                                                       placeholder="Especialidad">
-                                                <label for="especialidad">Especialidad</label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="form-floating">
-                                                <input type="number" class="form-control" id="años_experiencia" name="años_experiencia" 
-                                                       placeholder="Años de Experiencia" min="0">
-                                                <label for="años_experiencia">Años de Experiencia</label>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="form-floating">
-                                                <input type="text" class="form-control" id="hospital_clinica" name="hospital_clinica" 
-                                                       placeholder="Hospital/Clínica">
-                                                <label for="hospital_clinica">Hospital/Clínica (opcional)</label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
                                 
                                 <div class="d-flex justify-content-between">
                                     <button type="button" class="btn btn-outline-secondary" onclick="prevStep(2)">

@@ -10,6 +10,8 @@ class SolicitudOpinion(models.Model):
         ('pendiente', 'Pendiente'),
         ('asignada', 'Asignada'),
         ('en_revision', 'En Revisión'),
+        ('revision_pendiente', 'Revisión Pendiente'),  # Criterio emitido, esperando aprobación del líder
+        ('aprobada', 'Aprobada'),  # Aprobada por el líder
         ('completada', 'Completada'),
         ('cancelada', 'Cancelada'),
     ]
